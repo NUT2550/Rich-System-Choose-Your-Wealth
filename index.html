@@ -34,6 +34,26 @@
   }
   .system-card.locked .system-tag { color:#999; }
 
+  /* ★ เพิ่มใหม่: หน้าจอเลือกเพศ ★ */
+  .gender-screen {
+    position:fixed; inset:0; background:#0a0a0d; z-index:600;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:20px; text-align:center;
+  }
+  .gender-screen h1 { font-size:36px; margin-bottom:6px; }
+  .gender-sub { color:#aaa; margin-bottom:28px; }
+  .gender-grid { display:grid; grid-template-columns:repeat(2, minmax(200px, 260px)); gap:16px; }
+  @media (max-width:640px){ .gender-grid { grid-template-columns:1fr; } }
+  .gender-card {
+    background:#181820; border:2px solid gold; border-radius:16px;
+    padding:24px; cursor:pointer; color:#fff; text-align:center;
+    transition: transform .15s, background .15s;
+  }
+  .gender-card:hover { background:#22222d; transform:scale(1.04); }
+  .gender-icon { font-size:52px; margin-bottom:10px; }
+  .gender-label { font-weight:bold; font-size:20px; color:gold; margin-bottom:4px; }
+  .gender-desc { font-size:13px; color:#aaa; }
+
   .panel { background:#181820; border:1px solid #333; border-radius:12px; padding:14px; margin-bottom:14px; }
   .money { font-size:32px; font-weight:bold; margin:6px 0; }
   .sub { color:#aaa; font-size:14px; }
@@ -95,12 +115,32 @@
   </div>
 </div>
 
+<!-- ★ เพิ่มใหม่: หน้าจอเลือกเพศ ★ -->
+<div id="genderScreen" class="gender-screen hidden">
+  <h1>สร้างตัวละคร</h1>
+  <div class="gender-sub">เลือกเพศของตัวละคร</div>
+  <div class="gender-grid">
+    <button class="gender-card" onclick="chooseGender('male')">
+      <div class="gender-icon">🧑‍💼</div>
+      <div class="gender-label">ชาย</div>
+      <div class="gender-desc">ตัวละครชาย</div>
+    </button>
+    <button class="gender-card" onclick="chooseGender('female')">
+      <div class="gender-icon">👩‍💼</div>
+      <div class="gender-label">หญิง</div>
+      <div class="gender-desc">ตัวละครหญิง</div>
+    </button>
+  </div>
+</div>
+
 <!-- เกมหลัก -->
 <div id="gameScreen" class="hidden">
   <h1>Rich System Prototype</h1>
 
   <div class="panel">
     <div class="sub">ระบบที่เลือก: <span id="systemName">-</span></div>
+    <!-- ★ เพิ่มใหม่: แสดงเพศตัวละคร ★ -->
+    <div class="sub">ตัวละคร: <span id="playerGender">-</span></div>
     <div class="sub">เงินสด</div>
     <div class="money" id="money">1,000 บาท</div>
     <div class="sub" id="spent">ใช้จ่ายรวม: 0 บาท</div>
@@ -140,11 +180,21 @@
   let totalSpent = 0;
   let pendingCashbacks = [];
 
+  /* ★ เพิ่มใหม่: ตัวแปรเก็บเพศตัวละคร ★ */
+  let playerGender = '';
+  let selectedSystem = '';
+
   const flags = { firstWork:false, firstPurchase:false, spent1000:false, luxuryPurchase:false };
   const popupQueue = [];
   let popupActive = false;
 
   function format(n){ return n.toLocaleString('th-TH'); }
+
+  function getGenderText(){
+    if(playerGender === 'male') return 'ชาย';
+    if(playerGender === 'female') return 'หญิง';
+    return '-';
+  }
 
   function update(){
     document.getElementById('money').textContent = format(money) + ' บาท';
@@ -182,17 +232,33 @@
     showNextPopup();
   }
 
+  /* ★ แก้ไข: chooseSystem ตอนนี้ไปหน้าเลือกเพศแทน ★ */
   function chooseSystem(id){
     if(id !== 'cashback'){
       queuePopup('ระบบนี้ยังไม่ได้เปิดใน prototype นี้\nเร็ว ๆ นี้');
       return;
     }
+    selectedSystem = id;
+    // ซ่อนหน้าเลือกระบบ แสดงหน้าเลือกเพศ
     document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('genderScreen').classList.remove('hidden');
+  }
+
+  /* ★ เพิ่มใหม่: ฟังก์ชันเลือกเพศ ★ */
+  function chooseGender(gender){
+    playerGender = gender;
+    document.getElementById('genderScreen').classList.add('hidden');
     document.getElementById('gameScreen').classList.remove('hidden');
+
+    // ตั้งค่า UI
     document.getElementById('systemName').textContent = 'ระบบเงินคืน';
+    document.getElementById('playerGender').textContent = getGenderText();
+
     addSystem('[ระบบ] คุณเลือก ระบบเงินคืน');
+    addSystem('[ระบบ] ตัวละคร: เพศ' + getGenderText());
     addSms('Rich System: เปิดใช้งานระบบเงินคืนแล้ว');
-    queuePopup('[ระบบ] เปิดใช้งานระบบเงินคืน\nใช้เงิน 100 ได้คืน 200\nเงินคืนจะเข้าหลัง 5 วินาที');
+    addSms('Rich System: ยินดีต้อนรับ คุณ' + getGenderText());
+    queuePopup('[ระบบ] เปิดใช้งานระบบเงินคืน\nตัวละคร: เพศ' + getGenderText() + '\nใช้เงิน 100 ได้คืน 200\nเงินคืนจะเข้าหลัง 5 วินาที');
   }
 
   function earn(){
