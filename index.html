@@ -9,7 +9,6 @@
   h1 { color:gold; margin-top:0; }
   .hidden { display:none !important; }
 
-  /* หน้าจอเลือกระบบ */
   .start-screen {
     position:fixed; inset:0; background:#0a0a0d; z-index:500;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -34,7 +33,7 @@
   }
   .system-card.locked .system-tag { color:#999; }
 
-  /* ★ เพิ่มใหม่: หน้าจอเลือกเพศ ★ */
+  /* หน้าจอเลือกเพศ */
   .gender-screen {
     position:fixed; inset:0; background:#0a0a0d; z-index:600;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -59,8 +58,8 @@
   .sub { color:#aaa; font-size:14px; }
   button { background:gold; border:none; border-radius:10px; padding:10px 14px; margin:6px 6px 0 0; font-weight:bold; cursor:pointer; }
   button:hover { opacity:.9; }
+  .btn-danger { background:#e74c3c; color:#fff; font-size:12px; padding:6px 10px; margin-top:12px; }
 
-  /* การ์ดสินค้าพร้อมรูป */
   .shop-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(160px,1fr)); gap:12px; }
   .item-card { background:#22222d; border-radius:12px; overflow:hidden; display:flex; flex-direction:column; }
   .item-card img { width:100%; height:110px; object-fit:cover; display:block; background:#000; }
@@ -115,7 +114,7 @@
   </div>
 </div>
 
-<!-- ★ เพิ่มใหม่: หน้าจอเลือกเพศ ★ -->
+<!-- หน้าจอเลือกเพศ -->
 <div id="genderScreen" class="gender-screen hidden">
   <h1>สร้างตัวละคร</h1>
   <div class="gender-sub">เลือกเพศของตัวละคร</div>
@@ -139,12 +138,12 @@
 
   <div class="panel">
     <div class="sub">ระบบที่เลือก: <span id="systemName">-</span></div>
-    <!-- ★ เพิ่มใหม่: แสดงเพศตัวละคร ★ -->
     <div class="sub">ตัวละคร: <span id="playerGender">-</span></div>
     <div class="sub">เงินสด</div>
     <div class="money" id="money">1,000 บาท</div>
     <div class="sub" id="spent">ใช้จ่ายรวม: 0 บาท</div>
     <button onclick="earn()">ทำงาน +200</button>
+    <button class="btn-danger" onclick="resetGame()">🗑️ รีเซ็ตเกม</button>
   </div>
 
   <div class="panel">
@@ -168,21 +167,70 @@
 </div>
 
 <script>
-  // รายการสินค้า (img คือชื่อไฟล์รูปที่อัปโหลดเข้า repository)
+  // ═══════════════════════════════════════════
+  // ★ แก้ไข: ชื่อไฟล์รูปให้ตรงกับไฟล์จริงใน repo ★
+  // ไฟล์จริง: coffee.jpg.png, meal.jpg.png, bag.jpg.png, watch.jpg.png
+  // ═══════════════════════════════════════════
   const ITEMS = [
-    { name:'กาแฟหรู',      price:100,  img:'coffee.jpg' },
-    { name:'อาหารร้านดัง', price:500,  img:'meal.jpg'   },
-    { name:'กระเป๋าแบรนด์', price:2000, img:'bag.jpg'    },
-    { name:'นาฬิกาหรู',    price:5000, img:'watch.jpg'  }
+    { name:'กาแฟหรู',      price:100,  img:'coffee.jpg.png' },
+    { name:'อาหารร้านดัง', price:500,  img:'meal.jpg.png'   },
+    { name:'กระเป๋าแบรนด์', price:2000, img:'bag.jpg.png'    },
+    { name:'นาฬิกาหรู',    price:5000, img:'watch.jpg.png'  }
   ];
 
+  // ═══════════════════════════════════════════
+  // ★ ระบบบันทึกข้อมูล (localStorage) ★
+  // ═══════════════════════════════════════════
+  const SAVE_KEY = 'richSystemSave';
+
+  function saveGame(){
+    const data = {
+      money: money,
+      totalSpent: totalSpent,
+      playerGender: playerGender,
+      selectedSystem: selectedSystem,
+      flags: flags,
+      gameStarted: gameStarted
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+  }
+
+  function loadGame(){
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return false;
+    try {
+      const data = JSON.parse(raw);
+      money = data.money ?? 1000;
+      totalSpent = data.totalSpent ?? 0;
+      playerGender = data.playerGender ?? '';
+      selectedSystem = data.selectedSystem ?? '';
+      gameStarted = data.gameStarted ?? false;
+      if(data.flags){
+        flags.firstWork = data.flags.firstWork ?? false;
+        flags.firstPurchase = data.flags.firstPurchase ?? false;
+        flags.spent1000 = data.flags.spent1000 ?? false;
+        flags.luxuryPurchase = data.flags.luxuryPurchase ?? false;
+      }
+      return true;
+    } catch(e){ return false; }
+  }
+
+  function resetGame(){
+    if(confirm('ต้องการรีเซ็ตเกมทั้งหมด? ข้อมูลจะถูกลบถาวร')){
+      localStorage.removeItem(SAVE_KEY);
+      location.reload();
+    }
+  }
+
+  // ═══════════════════════════════════════════
+  // ตัวแปรเกม
+  // ═══════════════════════════════════════════
   let money = 1000;
   let totalSpent = 0;
   let pendingCashbacks = [];
-
-  /* ★ เพิ่มใหม่: ตัวแปรเก็บเพศตัวละคร ★ */
   let playerGender = '';
   let selectedSystem = '';
+  let gameStarted = false;
 
   const flags = { firstWork:false, firstPurchase:false, spent1000:false, luxuryPurchase:false };
   const popupQueue = [];
@@ -199,6 +247,7 @@
   function update(){
     document.getElementById('money').textContent = format(money) + ' บาท';
     document.getElementById('spent').textContent = 'ใช้จ่ายรวม: ' + format(totalSpent) + ' บาท';
+    saveGame(); // ★ บันทึกทุกครั้งที่อัปเดต ★
   }
 
   function addLog(id, cls, text){
@@ -232,25 +281,22 @@
     showNextPopup();
   }
 
-  /* ★ แก้ไข: chooseSystem ตอนนี้ไปหน้าเลือกเพศแทน ★ */
   function chooseSystem(id){
     if(id !== 'cashback'){
       queuePopup('ระบบนี้ยังไม่ได้เปิดใน prototype นี้\nเร็ว ๆ นี้');
       return;
     }
     selectedSystem = id;
-    // ซ่อนหน้าเลือกระบบ แสดงหน้าเลือกเพศ
     document.getElementById('startScreen').classList.add('hidden');
     document.getElementById('genderScreen').classList.remove('hidden');
   }
 
-  /* ★ เพิ่มใหม่: ฟังก์ชันเลือกเพศ ★ */
   function chooseGender(gender){
     playerGender = gender;
+    gameStarted = true;
     document.getElementById('genderScreen').classList.add('hidden');
     document.getElementById('gameScreen').classList.remove('hidden');
 
-    // ตั้งค่า UI
     document.getElementById('systemName').textContent = 'ระบบเงินคืน';
     document.getElementById('playerGender').textContent = getGenderText();
 
@@ -259,6 +305,7 @@
     addSms('Rich System: เปิดใช้งานระบบเงินคืนแล้ว');
     addSms('Rich System: ยินดีต้อนรับ คุณ' + getGenderText());
     queuePopup('[ระบบ] เปิดใช้งานระบบเงินคืน\nตัวละคร: เพศ' + getGenderText() + '\nใช้เงิน 100 ได้คืน 200\nเงินคืนจะเข้าหลัง 5 วินาที');
+    saveGame();
   }
 
   function earn(){
@@ -273,6 +320,7 @@
       addSms('Rich System: ปลดล็อกเหตุการณ์ งานแรกของคุณ');
       queuePopup('ปลดล็อกเหตุการณ์\nงานแรกของคุณ\nคุณเริ่มมีเงินสำหรับใช้จ่ายแล้ว');
     }
+    saveGame();
   }
 
   function buy(item){
@@ -301,6 +349,7 @@
     addSms('ธนาคาร: คุณใช้จ่าย ' + format(item.price) + ' บาท');
 
     unlockAfterPurchase(item.price);
+    saveGame();
   }
 
   function processCashbacks(){
@@ -355,8 +404,28 @@
     });
   }
 
-  renderShop();
-  update();
+  // ═══════════════════════════════════════════
+  // ★ เริ่มต้นเกม: โหลดข้อมูลจาก localStorage ★
+  // ═══════════════════════════════════════════
+  function initGame(){
+    const hasSave = loadGame();
+
+    if(hasSave && gameStarted && playerGender){
+      // มีเซฟแล้ว → ข้ามเข้าเกมเลย
+      document.getElementById('startScreen').classList.add('hidden');
+      document.getElementById('genderScreen').classList.add('hidden');
+      document.getElementById('gameScreen').classList.remove('hidden');
+      document.getElementById('systemName').textContent = 'ระบบเงินคืน';
+      document.getElementById('playerGender').textContent = getGenderText();
+      addSystem('[ระบบ] โหลดข้อมูลเซฟสำเร็จ ยินดีต้อนรับกลับ!');
+    }
+    // ถ้าไม่มีเซฟ → เริ่มจากหน้าเลือกระบบตามปกติ
+
+    renderShop();
+    update();
+  }
+
+  initGame();
 </script>
 </body>
 </html>
