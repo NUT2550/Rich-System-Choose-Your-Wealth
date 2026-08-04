@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rich System Prototype</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: sans-serif;
+      background: #0f0f12;
+      color: #fff;
+    }
+
+    h1 {
+      color: gold;
+      margin-top: 0;
+    }
+
+    .panel {
+      background: #181820;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .money {
+      font-size: 32px;
+      font-weight: bold;
+      margin: 6px 0;
+    }
+
+    .sub {
+      color: #aaa;
+      font-size: 14px;
+    }
+
+    button {
+      background: gold;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin: 6px 6px 0 0;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 900px) {
+      .columns {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .log {
+      max-height: 250px;
+      overflow: auto;
+    }
+
+    .message {
+      background: #22222d;
+      border-radius: 10px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .system {
+      border-left: 4px solid gold;
+    }
+
+    .sms {
+      border-left: 4px solid #4da6ff;
+    }
+
+    .event {
+      border-left: 4px solid #67ff9a;
+    }
+
+    .popup {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+
+    .popup.hidden {
+      display: none;
+    }
+
+    .popup-box {
+      width: min(90vw, 420px);
+      background: #101018;
+      border: 1px solid gold;
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      white-space: pre-line;
+      line-height: 1.6;
+    }
+
+    .popup-box button {
+      margin-top: 18px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Rich System Prototype</h1>
+
+  <div class="panel">
+    <div class="sub">เงินสด</div>
+    <div class="money" id="money">1,000 บาท</div>
+    <div class="sub" id="spent">ใช้จ่ายรวม: 0 บาท</div>
+
+    <button onclick="earn()">ทำงาน +200</button>
+  </div>
+
+  <div class="panel">
+    <h2>ร้านค้า</h2>
+    <button onclick="buy('กาแฟหรู', 100)">ซื้อกาแฟหรู 100</button>
+    <button onclick="buy('อาหารร้านดัง', 500)">ซื้ออาหารร้านดัง 500</button>
+    <button onclick="buy('กระเป๋าแบรนด์', 2000)">ซื้อกระเป๋าแบรนด์ 2,000</button>
+    <button onclick="buy('นาฬิกาหรู', 5000)">ซื้อนาฬิกาหรู 5,000</button>
+  </div>
+
+  <div class="columns">
+    <div class="panel">
+      <h2>หน้าต่างระบบ</h2>
+      <div id="systemLog" class="log"></div>
+    </div>
+
+    <div class="panel">
+      <h2>SMS มือถือ</h2>
+      <div id="smsLog" class="log"></div>
+    </div>
+
+    <div class="panel">
+      <h2>เหตุการณ์ที่ปลดล็อก</h2>
+      <div id="eventLog" class="log"></div>
+    </div>
+  </div>
+
+  <!-- Popup -->
+  <div id="popup" class="popup hidden">
+    <div class="popup-box">
+      <div id="popupText"></div>
+      <button onclick="closePopup()">ปิด</button>
+    </div>
+  </div>
+
+  <script>
+    let money = 1000;
+    let totalSpent = 0;
+
+    const flags = {
+      firstWork: false,
+      firstPurchase: false,
+      spent1000: false,
+      luxuryPurchase: false
+    };
+
+    const popupQueue = [];
+    let popupActive = false;
+
+    function format(number) {
+      return number.toLocaleString("th-TH");
+    }
+
+    function update() {
+      document.getElementById("money").textContent = format(money) + " บาท";
+      document.getElementById("spent").textContent =
+        "ใช้จ่ายรวม: " + format(totalSpent) + " บาท";
+    }
+
+    function addLog(containerId, className, text) {
+      const box = document.getElementById(containerId);
+      const div = document.createElement("div");
+      div.className = "message " + className;
+      div.textContent = text;
+      box.prepend(div);
+    }
+
+    function addSystem(text) {
+      addLog("systemLog", "system", text);
+    }
+
+    function addSms(text) {
+      addLog("smsLog", "sms", text);
+    }
+
+    function addEvent(text) {
+      addLog("eventLog", "event", text);
+    }
+
+    function queuePopup(text) {
+      popupQueue.push(text);
+      if (!popupActive) {
+        showNextPopup();
+      }
+    }
+
+    function showNextPopup() {
+      const popup = document.getElementById("popup");
+      const popupText = document.getElementById("popupText");
+
+      if (popupQueue.length === 0) {
+        popupActive = false;
+        popup.classList.add("hidden");
+        return;
+      }
+
+      popupActive = true;
+      popupText.textContent = popupQueue[0];
+      popup.classList.remove("hidden");
+    }
+
+    function closePopup() {
+      popupQueue.shift();
+      showNextPopup();
+    }
+
+    function earn() {
+      money += 200;
+      update();
+
+      addSystem("[ระบบ] คุณทำงานสำเร็จ ได้รับเงิน 200 บาท");
+      addSms("ธนาคาร: เงินเข้าบัญชี 200 บาท");
+
+      if (!flags.firstWork) {
+        flags.firstWork = true;
+        addEvent("ปลดล็อกเหตุการณ์: งานแรกของคุณ");
+        addSms("Rich System: ปลดล็อกเหตุการณ์ งานแรกของคุณ");
+        queuePopup("ปลดล็อกเหตุการณ์\nงานแรกของคุณ\nคุณเริ่มมีเงินสำหรับใช้จ่ายแล้ว");
+      }
+    }
+
+    function unlockAfterPurchase(price) {
+      if (!flags.firstPurchase) {
+        flags.firstPurchase = true;
+        addEvent("ปลดล็อกเหตุการณ์: การใช้จ่ายครั้งแรก");
+        addSms("Rich System: ปลดล็อกเหตุการณ์ การใช้จ่ายครั้งแรก");
+        queuePopup("ปลดล็อกเหตุการณ์\nการใช้จ่ายครั้งแรก\nโลกเริ่มตอบสนองต่อการใช้จ่ายของคุณแล้ว");
+      }
+
+      if (!flags.spent1000 && totalSpent >= 1000) {
+        flags.spent1000 = true;
+        addEvent("ปลดล็อกเหตุการณ์: เริ่มใช้เงินเป็น");
+        addSms("Rich System: ปลดล็อกเหตุการณ์ เริ่มใช้เงินเป็น");
+        queuePopup("ปลดล็อกเหตุการณ์\nเริ่มใช้เงินเป็น\nคุณใช้จ่ายรวมครบ 1,000 บาทแล้ว");
+      }
+
+      if (!flags.luxuryPurchase && price >= 2000) {
+        flags.luxuryPurchase = true;
+        addEvent("ปลดล็อกเหตุการณ์: ของหรูชิ้นแรก");
+        addSms("Rich System: ปลดล็อกเหตุการณ์ ของหรูชิ้นแรก");
+        queuePopup("ปลดล็อกเหตุการณ์\nของหรูชิ้นแรก\nพนักงานเริ่มจดจำคุณได้แล้ว");
+      }
+    }
+
+    function buy(itemName, price) {
+      if (money < price) {
+        queuePopup("เงินสดไม่พอ\nลองทำงานเพิ่มก่อน");
+        addSystem("[ระบบ] ธุรกรรมล้มเหลว: เงินสดไม่พอ");
+        addSms("ธนาคาร: ธุรกรรมล้มเหลว เงินคงเหลือไม่พอ");
+        return;
+      }
+
+      money -= price;
+      totalSpent += price;
+      update();
+
+      queuePopup(
+        "[ระบบ] ตรวจพบการใช้จ่าย\n" +
+        "รายการ: " + itemName + "\n" +
+        "จำนวนเงิน: " + format(price) + " บาท"
+      );
+
+      addSystem("[ระบบ] คุณซื้อ " + itemName + " ราคา " + format(price) + " บาท");
+      addSms("ธนาคาร: คุณใช้จ่าย " + format(price) + " บาท");
+
+      unlockAfterPurchase(price);
+    }
+
+    // เริ่มต้น
+    update();
+    addSystem("[ระบบ] ยินดีต้อนรับสู่ Rich System");
+    addSms("Rich System: ระบบของคุณพร้อมทำงานแล้ว");
+    queuePopup("[ระบบ] ยินดีต้อนรับสู่ Rich System\nลองทำงาน แล้วทดลองใช้เงินดู");
+  </script>
+
+</body>
+</html>
