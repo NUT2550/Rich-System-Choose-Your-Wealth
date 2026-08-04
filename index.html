@@ -11,7 +11,6 @@
   h2 { color:#eee; margin:0 0 10px; font-size:18px; }
   .hidden { display:none !important; }
 
-  /* ─── หน้าจอเลือกระบบ ─── */
   .start-screen {
     position:fixed; inset:0; background:#0a0a0d; z-index:500;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -36,7 +35,6 @@
   }
   .system-card.locked .system-tag { color:#999; }
 
-  /* ─── หน้าจอเลือกเพศ ─── */
   .gender-screen {
     position:fixed; inset:0; background:#0a0a0d; z-index:600;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -56,7 +54,6 @@
   .gender-label { font-weight:bold; font-size:20px; color:gold; margin-bottom:4px; }
   .gender-desc { font-size:13px; color:#aaa; }
 
-  /* ─── UI หลัก ─── */
   .panel { background:#181820; border:1px solid #333; border-radius:12px; padding:14px; margin-bottom:14px; }
   .money { font-size:32px; font-weight:bold; margin:6px 0; }
   .sub { color:#aaa; font-size:14px; }
@@ -64,8 +61,10 @@
   button:hover { opacity:.9; }
   .btn-danger { background:#e74c3c; color:#fff; font-size:12px; padding:6px 10px; }
   .btn-back { background:#555; color:#fff; font-size:13px; padding:6px 12px; }
+  .save-status { font-size:11px; color:#666; margin-top:6px; }
+  .save-status.ok { color:#67ff9a; }
+  .save-status.err { color:#e74c3c; }
 
-  /* ─── ห้าง / ร้านค้า ─── */
   .mall-header { text-align:center; margin-bottom:16px; }
   .mall-header h1 { font-size:28px; margin-bottom:4px; }
   .floor-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
@@ -155,13 +154,14 @@
   <h1>Rich System Prototype</h1>
 
   <div class="panel">
-    <div class="sub">ระบบที่เลือก: <span id="systemName">-</span> | ตัวละคร: <span id="playerGender">-</span></div>
+    <div class="sub">ระบบ: <span id="systemName">-</span> | ตัวละคร: <span id="playerGender">-</span></div>
     <div class="sub">เงินสด</div>
     <div class="money" id="money">1,000 บาท</div>
     <div class="sub" id="spent">ใช้จ่ายรวม: 0 บาท</div>
     <button onclick="earn()">ทำงาน +200</button>
     <button onclick="openMall()">🏬 เข้าห้าง Rich Mall</button>
     <button class="btn-danger" onclick="resetGame()">🗑️ รีเซ็ต</button>
+    <div class="save-status" id="saveStatus">☁️ กำลังเชื่อมต่อบันทึก...</div>
   </div>
 
   <!-- ห้าง Rich Mall -->
@@ -190,10 +190,89 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- ★ Firebase SDK (CDN) ★ -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// ─── Firebase Config ของคุณ ───
+const firebaseConfig = {
+  apiKey: "AIzaSyBvXijgpC-Pc5sbcXvGSTuurU6EER9I8HI",
+  authDomain: "yh-payroll.firebaseapp.com",
+  projectId: "yh-payroll",
+  storageBucket: "yh-payroll.firebasestorage.app",
+  messagingSenderId: "1041244524681",
+  appId: "1:1041244524681:web:3e3f64d6a7cf34656df658",
+  measurementId: "G-E16PE94YYC"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ─── สร้าง User ID เฉพาะเครื่อง (เก็บใน localStorage) ───
+function getPlayerId(){
+  let id = localStorage.getItem('richSystem_playerId');
+  if(!id){
+    id = 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2,9);
+    localStorage.setItem('richSystem_playerId', id);
+  }
+  return id;
+}
+const PLAYER_ID = getPlayerId();
+
+// ─── บันทึกข้อมูลลง Firestore ───
+window.firebaseSave = async function(data){
+  try {
+    await setDoc(doc(db, 'richSystemSaves', PLAYER_ID), {
+      ...data,
+      updatedAt: Date.now()
+    });
+    updateSaveStatus('ok','☁️ บันทึกแล้ว ('+new Date().toLocaleTimeString('th-TH')+')');
+  } catch(e){
+    console.error('Firebase save error:', e);
+    updateSaveStatus('err','⚠️ บันทึกไม่สำเร็จ (offline?)');
+    // fallback: localStorage
+    localStorage.setItem('richSystemSave_v2', JSON.stringify(data));
+  }
+};
+
+// ─── โหลดข้อมูลจาก Firestore ───
+window.firebaseLoad = async function(){
+  try {
+    const snap = await getDoc(doc(db, 'richSystemSaves', PLAYER_ID));
+    if(snap.exists()){
+      updateSaveStatus('ok','☁️ โหลดเซฟจาก Cloud สำเร็จ');
+      return snap.data();
+    }
+    return null;
+  } catch(e){
+    console.error('Firebase load error:', e);
+    updateSaveStatus('err','⚠️ โหลดจาก Cloud ไม่ได้ ใช้เซฟในเครื่อง');
+    // fallback: localStorage
+    const raw = localStorage.getItem('richSystemSave_v2');
+    if(raw) return JSON.parse(raw);
+    return null;
+  }
+};
+
+// ─── อัปเดตสถานะการบันทึก ───
+function updateSaveStatus(cls, text){
+  const el = document.getElementById('saveStatus');
+  if(el){ el.className='save-status '+cls; el.textContent=text; }
+}
+
+// ─── แจ้งว่า Firebase พร้อม ───
+window.firebaseReady = true;
+window.dispatchEvent(new Event('firebaseReady'));
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- ★ โค้ดเกมหลัก ★ -->
+<!-- ═══════════════════════════════════════════════════════════ -->
 <script>
-// ═══════════════════════════════════════════════════════════
-// ★ ข้อมูลสินค้า: ห้าง Rich Mall แบ่งเป็นชั้นและแบรนด์ ★
-// ═══════════════════════════════════════════════════════════
+// ═══ ข้อมูลสินค้า: ห้าง Rich Mall ═══
 const MALL_FLOORS = [
   {
     id:'floor1', name:'🍔 ชั้น 1: อาหาร & เครื่องดื่ม',
@@ -232,7 +311,7 @@ const MALL_FLOORS = [
     id:'floor4', name:'💎 ชั้น 4: ของหรู (Luxury)',
     items:[
       { name:'กระเป๋า ลุยส์วิตตอง',      brand:'ลุยส์วิตตอง (LV)',    price:85000, img:'luxury_bag.png' },
-      { name:'กระเป๋า ลุยส์วิตตอง Limited',brand:'ลุยส์วิตตอง (LV)',  price:150000,img:'luxury_bag.png' },
+      { name:'กระเป๋า LV Limited',       brand:'ลุยส์วิตตอง (LV)',    price:150000,img:'luxury_bag.png' },
       { name:'นาฬิกา โรเล็ก Submariner', brand:'โรเล็ก (Rolek)',      price:350000,img:'luxury_watch.png' },
       { name:'นาฬิกา โรเล็ก Daytona',    brand:'โรเล็ก (Rolek)',      price:520000,img:'luxury_watch.png' },
       { name:'น้ำหอม ชาแนล No.5',        brand:'ชาแนล (Chanal)',      price:5500,  img:'perfume.png' },
@@ -241,52 +320,7 @@ const MALL_FLOORS = [
   }
 ];
 
-// ═══════════════════════════════════════════════════════════
-// ★ ระบบบันทึกข้อมูล (localStorage) ★
-// ═══════════════════════════════════════════════════════════
-const SAVE_KEY = 'richSystemSave_v2';
-
-function saveGame(){
-  const data = {
-    money, totalSpent, playerGender, selectedSystem, flags, gameStarted,
-    purchaseHistory
-  };
-  localStorage.setItem(SAVE_KEY, JSON.stringify(data));
-}
-
-function loadGame(){
-  const raw = localStorage.getItem(SAVE_KEY);
-  if(!raw) return false;
-  try {
-    const d = JSON.parse(raw);
-    money = d.money ?? 1000;
-    totalSpent = d.totalSpent ?? 0;
-    playerGender = d.playerGender ?? '';
-    selectedSystem = d.selectedSystem ?? '';
-    gameStarted = d.gameStarted ?? false;
-    purchaseHistory = d.purchaseHistory ?? [];
-    if(d.flags){
-      flags.firstWork = d.flags.firstWork ?? false;
-      flags.firstPurchase = d.flags.firstPurchase ?? false;
-      flags.spent1000 = d.flags.spent1000 ?? false;
-      flags.luxuryPurchase = d.flags.luxuryPurchase ?? false;
-      flags.visitMall = d.flags.visitMall ?? false;
-      flags.allFloors = d.flags.allFloors ?? false;
-    }
-    return true;
-  } catch(e){ return false; }
-}
-
-function resetGame(){
-  if(confirm('ต้องการรีเซ็ตเกมทั้งหมด? ข้อมูลจะถูกลบถาวร')){
-    localStorage.removeItem(SAVE_KEY);
-    location.reload();
-  }
-}
-
-// ═══════════════════════════════════════════════════════════
-// ตัวแปรเกม
-// ═══════════════════════════════════════════════════════════
+// ═══ ตัวแปรเกม ═══
 let money = 1000;
 let totalSpent = 0;
 let pendingCashbacks = [];
@@ -296,6 +330,7 @@ let gameStarted = false;
 let currentFloor = 0;
 let purchaseHistory = [];
 let visitedFloors = new Set();
+let saveTimeout = null;
 
 const flags = { firstWork:false, firstPurchase:false, spent1000:false, luxuryPurchase:false, visitMall:false, allFloors:false };
 const popupQueue = [];
@@ -314,6 +349,69 @@ function update(){
   saveGame();
 }
 
+// ═══ ระบบบันทึก (Firebase + localStorage fallback) ═══
+function saveGame(){
+  const data = {
+    money, totalSpent, playerGender, selectedSystem,
+    flags: {...flags}, gameStarted,
+    purchaseHistory: purchaseHistory.slice(-50) // เก็บ 50 รายการล่าสุด
+  };
+
+  // บันทึก localStorage เสมอ (backup)
+  localStorage.setItem('richSystemSave_v2', JSON.stringify(data));
+
+  // บันทึก Firebase (debounce 1 วินาที เพื่อไม่ให้เรียกบ่อยเกิน)
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(()=>{
+    if(window.firebaseSave){
+      window.firebaseSave(data);
+    }
+  }, 1000);
+}
+
+async function loadGame(){
+  let data = null;
+
+  // ลองโหลดจาก Firebase ก่อน
+  if(window.firebaseLoad){
+    data = await window.firebaseLoad();
+  }
+
+  // ถ้าไม่ได้จาก Firebase ลอง localStorage
+  if(!data){
+    const raw = localStorage.getItem('richSystemSave_v2');
+    if(raw){ try{ data=JSON.parse(raw); }catch(e){} }
+  }
+
+  if(!data) return false;
+
+  money = data.money ?? 1000;
+  totalSpent = data.totalSpent ?? 0;
+  playerGender = data.playerGender ?? '';
+  selectedSystem = data.selectedSystem ?? '';
+  gameStarted = data.gameStarted ?? false;
+  purchaseHistory = data.purchaseHistory ?? [];
+  if(data.flags){
+    Object.keys(flags).forEach(k=>{ flags[k]=data.flags[k]??false; });
+  }
+  return true;
+}
+
+function resetGame(){
+  if(confirm('ต้องการรีเซ็ตเกมทั้งหมด? ข้อมูลจะถูกลบถาวร')){
+    localStorage.removeItem('richSystemSave_v2');
+    // ลบจาก Firebase ด้วย
+    if(window.firebaseSave){
+      window.firebaseSave({ money:1000, totalSpent:0, playerGender:'', selectedSystem:'',
+        flags:{firstWork:false,firstPurchase:false,spent1000:false,luxuryPurchase:false,visitMall:false,allFloors:false},
+        gameStarted:false, purchaseHistory:[]
+      });
+    }
+    location.reload();
+  }
+}
+
+// ═══ UI Helpers ═══
 function addLog(id,cls,text){
   const box=document.getElementById(id);
   const div=document.createElement('div');
@@ -338,15 +436,13 @@ function showNextPopup(){
 }
 function closePopup(){ popupQueue.shift(); showNextPopup(); }
 
-// ═══════════════════════════════════════════════════════════
-// ระบบห้างสรรพสินค้า
-// ═══════════════════════════════════════════════════════════
+// ═══ ระบบห้าง ═══
 function openMall(){
   document.getElementById('mallPanel').classList.remove('hidden');
   visitedFloors.add(currentFloor);
   if(!flags.visitMall){
     flags.visitMall=true;
-    addEvent('ปลดล็อกเหตุการณ์: เข้าห้าง Rich Mall ครั้งแรก');
+    addEvent('ปลดล็อก: เข้าห้าง Rich Mall ครั้งแรก');
     addSms('Rich System: ปลดล็อกเหตุการณ์ เข้าห้าง Rich Mall');
     queuePopup('ปลดล็อกเหตุการณ์\nเข้าห้าง Rich Mall ครั้งแรก\nยินดีต้อนรับสู่ห้างสรรพสินค้าสุดหรู!');
   }
@@ -354,11 +450,9 @@ function openMall(){
   renderShop();
   saveGame();
 }
-
 function closeMall(){
   document.getElementById('mallPanel').classList.add('hidden');
 }
-
 function renderFloorTabs(){
   const tabs=document.getElementById('floorTabs');
   tabs.innerHTML='';
@@ -370,7 +464,6 @@ function renderFloorTabs(){
     tabs.appendChild(btn);
   });
 }
-
 function renderShop(){
   const shop=document.getElementById('shop');
   shop.innerHTML='';
@@ -390,43 +483,30 @@ function renderShop(){
   });
 }
 
-// ═══════════════════════════════════════════════════════════
-// ระบบซื้อของ
-// ═══════════════════════════════════════════════════════════
-function buyItem(floorIdx, itemIdx){
+// ═══ ระบบซื้อของ ═══
+function buyItem(floorIdx,itemIdx){
   const item=MALL_FLOORS[floorIdx].items[itemIdx];
   if(money<item.price){
-    queuePopup('เงินสดไม่พอ\nราคา: '+format(item.price)+' บาท\nมีเงิน: '+format(money)+' บาท\nลองทำงานเพิ่มก่อน!');
-    addSystem('[ระบบ] ธุรกรรมล้มเหลว: เงินสดไม่พอซื้อ '+item.name);
+    queuePopup('เงินสดไม่พอ\nราคา: '+format(item.price)+' บาท\nมีเงิน: '+format(money)+' บาท');
+    addSystem('[ระบบ] ธุรกรรมล้มเหลว: เงินไม่พอซื้อ '+item.name);
     return;
   }
-
   money-=item.price;
   totalSpent+=item.price;
-  purchaseHistory.push({ name:item.name, brand:item.brand, price:item.price, time:Date.now() });
+  purchaseHistory.push({name:item.name,brand:item.brand,price:item.price,time:Date.now()});
   update();
 
   const cashback=item.price*2;
-  pendingCashbacks.push({ amount:cashback, payAt:Date.now()+5000, status:'pending' });
+  pendingCashbacks.push({amount:cashback,payAt:Date.now()+5000,status:'pending'});
 
-  queuePopup(
-    '[ระบบ] ตรวจพบการใช้จ่าย\n'+
-    'ร้าน: '+item.brand+'\n'+
-    'รายการ: '+item.name+'\n'+
-    'จำนวนเงิน: '+format(item.price)+' บาท\n'+
-    'เงินคืน '+format(cashback)+' บาทจะเข้าใน 5 วินาที'
-  );
-
-  addSystem('[ระบบ] ซื้อ '+item.name+' ('+item.brand+') ราคา '+format(item.price)+' บาท');
-  addSms('ธนาคาร: คุณใช้จ่าย '+format(item.price)+' บาท ที่ '+item.brand);
-
+  queuePopup('[ระบบ] ตรวจพบการใช้จ่าย\nร้าน: '+item.brand+'\nรายการ: '+item.name+'\nจำนวน: '+format(item.price)+' บาท\nเงินคืน '+format(cashback)+' บาท จะเข้าใน 5 วิ');
+  addSystem('[ระบบ] ซื้อ '+item.name+' ('+item.brand+') '+format(item.price)+' บาท');
+  addSms('ธนาคาร: จ่าย '+format(item.price)+' บาท ที่ '+item.brand);
   unlockAfterPurchase(item.price);
   saveGame();
 }
 
-// ═══════════════════════════════════════════════════════════
-// ระบบเงินคืน
-// ═══════════════════════════════════════════════════════════
+// ═══ ระบบเงินคืน ═══
 function processCashbacks(){
   const now=Date.now();
   pendingCashbacks.forEach(c=>{
@@ -434,63 +514,52 @@ function processCashbacks(){
       c.status='completed';
       money+=c.amount;
       addSystem('[ระบบ] เงินคืน '+format(c.amount)+' บาทเข้าบัญชีแล้ว');
-      addSms('ธนาคาร: เงินเข้า '+format(c.amount)+' บาท (เงินคืนจากระบบ)');
+      addSms('ธนาคาร: เงินเข้า '+format(c.amount)+' บาท (เงินคืน)');
       update();
     }
   });
 }
 setInterval(processCashbacks,250);
 
-// ═══════════════════════════════════════════════════════════
-// ระบบปลดล็อกเหตุการณ์
-// ═══════════════════════════════════════════════════════════
+// ═══ ปลดล็อกเหตุการณ์ ═══
 function unlockAfterPurchase(price){
   if(!flags.firstPurchase){
     flags.firstPurchase=true;
     addEvent('ปลดล็อก: การใช้จ่ายครั้งแรก');
-    addSms('Rich System: ปลดล็อกเหตุการณ์ การใช้จ่ายครั้งแรก');
     queuePopup('ปลดล็อกเหตุการณ์\nการใช้จ่ายครั้งแรก\nโลกเริ่มตอบสนองต่อการใช้จ่ายของคุณแล้ว');
   }
   if(!flags.spent1000&&totalSpent>=1000){
     flags.spent1000=true;
-    addEvent('ปลดล็อก: เริ่มใช้เงินเป็น (ใช้จ่ายครบ 1,000)');
-    addSms('Rich System: ปลดล็อกเหตุการณ์ เริ่มใช้เงินเป็น');
+    addEvent('ปลดล็อก: เริ่มใช้เงินเป็น (ครบ 1,000)');
     queuePopup('ปลดล็อกเหตุการณ์\nเริ่มใช้เงินเป็น\nคุณใช้จ่ายรวมครบ 1,000 บาทแล้ว');
   }
   if(!flags.luxuryPurchase&&price>=5000){
     flags.luxuryPurchase=true;
-    addEvent('ปลดล็อก: ของหรูชิ้นแรก (ซื้อของ 5,000+)');
-    addSms('Rich System: ปลดล็อกเหตุการณ์ ของหรูชิ้นแรก');
+    addEvent('ปลดล็อก: ของหรูชิ้นแรก (5,000+)');
     queuePopup('ปลดล็อกเหตุการณ์\nของหรูชิ้นแรก\nพนักงานเริ่มจดจำคุณได้แล้ว');
   }
   if(!flags.allFloors&&visitedFloors.size>=MALL_FLOORS.length){
     flags.allFloors=true;
     addEvent('ปลดล็อก: สำรวจห้างครบทุกชั้น');
-    addSms('Rich System: ปลดล็อกเหตุการณ์ สำรวจห้างครบทุกชั้น');
     queuePopup('ปลดล็อกเหตุการณ์\nสำรวจห้างครบทุกชั้น\nคุณรู้จักทุกมุมของ Rich Mall แล้ว!');
   }
 }
 
-// ═══════════════════════════════════════════════════════════
-// ระบบทำงาน
-// ═══════════════════════════════════════════════════════════
+// ═══ ทำงาน ═══
 function earn(){
   money+=200;
   update();
-  addSystem('[ระบบ] ทำงานสำเร็จ ได้รับเงิน 200 บาท');
-  addSms('ธนาคาร: เงินเข้าบัญชี 200 บาท');
+  addSystem('[ระบบ] ทำงานสำเร็จ +200 บาท');
+  addSms('ธนาคาร: เงินเข้า 200 บาท');
   if(!flags.firstWork){
     flags.firstWork=true;
     addEvent('ปลดล็อก: งานแรกของคุณ');
-    addSms('Rich System: ปลดล็อกเหตุการณ์ งานแรกของคุณ');
     queuePopup('ปลดล็อกเหตุการณ์\nงานแรกของคุณ\nคุณเริ่มมีเงินสำหรับใช้จ่ายแล้ว');
   }
   saveGame();
 }
 
-// ═══════════════════════════════════════════════════════════
-// Flow เกม
-// ═══════════════════════════════════════════════════════════
+// ═══ Flow เกม ═══
 function chooseSystem(id){
   if(id!=='cashback'){
     queuePopup('ระบบนี้ยังไม่ได้เปิดใน prototype นี้\nเร็ว ๆ นี้');
@@ -508,25 +577,32 @@ function chooseGender(gender){
   document.getElementById('gameScreen').classList.remove('hidden');
   document.getElementById('systemName').textContent='ระบบเงินคืน';
   document.getElementById('playerGender').textContent=getGenderText();
-  addSystem('[ระบบ] เปิดใช้งานระบบเงินคืน | ตัวละคร: เพศ'+getGenderText());
+  addSystem('[ระบบ] เปิดระบบเงินคืน | เพศ'+getGenderText());
   addSms('Rich System: ยินดีต้อนรับ คุณ'+getGenderText());
-  queuePopup('[ระบบ] เปิดใช้งานระบบเงินคืน\nตัวละคร: เพศ'+getGenderText()+'\nใช้เงิน 100 ได้คืน 200\nเงินคืนเข้าหลัง 5 วินาที\n\n💡 กดปุ่ม "เข้าห้าง Rich Mall" เพื่อเริ่มช้อปปิ้ง!');
+  queuePopup('[ระบบ] เปิดใช้งานระบบเงินคืน\nตัวละคร: เพศ'+getGenderText()+'\nใช้เงิน 100 ได้คืน 200\n\n💡 กด "เข้าห้าง Rich Mall" เพื่อช้อปปิ้ง!');
   saveGame();
 }
 
-// ═══════════════════════════════════════════════════════════
-// เริ่มต้นเกม
-// ═══════════════════════════════════════════════════════════
-function initGame(){
-  const hasSave=loadGame();
+// ═══ เริ่มต้นเกม ═══
+async function initGame(){
+  // รอ Firebase พร้อม (หรือ timeout 3 วิ)
+  await new Promise(resolve=>{
+    if(window.firebaseReady) return resolve();
+    const timer = setTimeout(resolve, 3000);
+    window.addEventListener('firebaseReady', ()=>{ clearTimeout(timer); resolve(); });
+  });
+
+  const hasSave = await loadGame();
+
   if(hasSave&&gameStarted&&playerGender){
     document.getElementById('startScreen').classList.add('hidden');
     document.getElementById('genderScreen').classList.add('hidden');
     document.getElementById('gameScreen').classList.remove('hidden');
     document.getElementById('systemName').textContent='ระบบเงินคืน';
     document.getElementById('playerGender').textContent=getGenderText();
-    addSystem('[ระบบ] โหลดเซฟสำเร็จ ยินดีต้อนรับกลับ!');
+    addSystem('[ระบบ] โหลดเซฟจาก Cloud สำเร็จ ยินดีต้อนรับกลับ!');
   }
+
   renderFloorTabs();
   renderShop();
   update();
