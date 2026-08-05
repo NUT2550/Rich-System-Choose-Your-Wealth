@@ -3,403 +3,424 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rich System - Pixel Mall</title>
+<title>Rich System Prototype V2</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;padding:14px;font-family:'Segoe UI',sans-serif;background:radial-gradient(circle at top right,#1a1a2e,#0f0f12);color:#fff}
-h1{color:#FFD700;margin:0 0 10px;text-shadow:0 2px 4px rgba(0,0,0,.5)}
-.hidden{display:none!important}
-button{background:linear-gradient(135deg,#FFD700,#FFA500);border:none;border-radius:8px;padding:10px 14px;margin:4px 4px 0 0;font-weight:bold;cursor:pointer;color:#000}
-button:hover{opacity:.9}
-.btn-danger{background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff}
-.screen{position:fixed;inset:0;background:radial-gradient(circle,#1a1a2e,#050508);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center}
-.grid2{display:grid;grid-template-columns:repeat(2,minmax(200px,260px));gap:14px}
-.card{background:rgba(24,24,32,.85);border:1px solid #FFD700;border-radius:14px;padding:18px;cursor:pointer;color:#fff}
-.card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(255,215,0,.15)}
-.card .t{font-weight:bold;color:#FFD700;font-size:18px;margin-bottom:6px}
-.card .d{font-size:13px;color:#ccc}
-#hud{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:rgba(24,24,32,.85);border:1px solid #333;border-radius:12px;padding:10px 14px;margin-bottom:10px}
-#money{font-size:26px;font-weight:bold;color:#67ff9a}
-.sub{color:#aaa;font-size:13px}
-#gameWrap{position:relative;display:flex;justify-content:center}
-canvas{image-rendering:pixelated;image-rendering:crisp-edges;border:3px solid #FFD700;border-radius:6px;max-width:100%;height:auto}
-#hint{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.75);border:1px solid #FFD700;border-radius:8px;padding:6px 14px;font-size:14px;color:#FFD700;pointer-events:none}
-#floorTag{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.75);border-radius:8px;padding:6px 10px;font-size:13px;color:#fff}
-#dpad{position:absolute;right:10px;bottom:10px;display:grid;grid-template-columns:repeat(3,44px);gap:4px;opacity:.85}
-#dpad button{margin:0;padding:10px 0;font-size:16px;border-radius:8px}
-.columns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px}
-@media(max-width:900px){.columns{grid-template-columns:1fr}}
-.panel{background:rgba(24,24,32,.85);border:1px solid #333;border-radius:12px;padding:12px}
-.panel h2{font-size:15px;margin:0 0 8px;color:#eee}
-.log{max-height:200px;overflow:auto}
-.message{background:rgba(34,34,45,.6);border-radius:8px;padding:8px;margin-bottom:6px;font-size:12px;line-height:1.5;border-left:4px solid #555}
-.message.system{border-left-color:#FFD700}.message.sms{border-left-color:#4da6ff}.message.event{border-left-color:#67ff9a}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:900}
-.modal-box{width:min(92vw,640px);max-height:85vh;overflow:auto;background:#101018;border:2px solid #FFD700;border-radius:16px;padding:18px}
-.modal-box h2{color:#FFD700;margin:0 0 4px}
-.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:12px}
-.item-card{background:#22222d;border-radius:10px;padding:10px;text-align:center;border:1px solid #333}
-.item-icon{font-size:40px;margin-bottom:6px}
-.item-name{font-size:13px;font-weight:bold;margin-bottom:4px}
-.item-ai{font-size:11px;color:#4da6ff;margin-bottom:4px}
-.item-price{color:#FFD700;font-weight:bold;font-size:14px;margin-bottom:8px}
-.item-card button{width:100%;margin:0}
-.save-status{font-size:11px;color:#666}
-.save-status.ok{color:#67ff9a}.save-status.err{color:#e74c3c}
+  body { margin:0; padding:20px; font-family:sans-serif; background:#0f0f12; color:#fff; }
+  h1 { color:gold; margin-top:0; }
+  .hidden { display:none !important; }
+
+  /* หน้าจอเลือกระบบ */
+  .start-screen {
+    position:fixed; inset:0; background:#0a0a0d; z-index:500;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:20px; text-align:center;
+    overflow-y:auto;
+  }
+  .start-screen h1 { font-size:40px; margin-bottom:6px; }
+  .start-sub { color:#aaa; margin-bottom:24px; }
+  .system-grid { display:grid; grid-template-columns:repeat(2, minmax(220px, 280px)); gap:14px; }
+  @media (max-width:640px){ .system-grid { grid-template-columns:1fr; } }
+  .system-card {
+    background:#181820; border:1px solid gold; border-radius:14px;
+    padding:18px; cursor:pointer; color:#fff; text-align:left; transition: 0.2s;
+  }
+  .system-card:hover { background:#22222d; transform: translateY(-2px); }
+  .system-card.locked { border-color:#444; opacity:.75; }
+  .system-name { font-weight:bold; font-size:18px; color:gold; margin-bottom:6px; }
+  .system-card.locked .system-name { color:#bbb; }
+  .system-desc { font-size:14px; color:#ccc; }
+  .system-tag {
+    display:inline-block; margin-top:8px; font-size:12px;
+    padding:2px 8px; border-radius:999px; background:#2a2a35; color:#9f9;
+  }
+  .system-card.locked .system-tag { color:#999; }
+
+  .panel { background:#181820; border:1px solid #333; border-radius:12px; padding:14px; margin-bottom:14px; }
+  .money { font-size:32px; font-weight:bold; margin:6px 0; color: gold; }
+  .sub { color:#aaa; font-size:14px; }
+  button { background:gold; border:none; border-radius:10px; padding:10px 14px; margin:6px 6px 0 0; font-weight:bold; cursor:pointer; transition: 0.2s; }
+  button:hover { opacity:.9; transform: translateY(-1px); }
+  button:active { transform: translateY(1px); }
+
+  #upgradeSection { background:#15151e; padding:12px; border-radius:10px; border:1px dashed gold; margin-top:12px; }
+
+  /* การ์ดสินค้าพร้อมรูป */
+  .shop-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(160px,1fr)); gap:12px; }
+  .item-card { background:#22222d; border-radius:12px; overflow:hidden; display:flex; flex-direction:column; border: 1px solid #333; transition: 0.2s; }
+  .item-card:hover { border-color: gold; }
+  .item-card img { width:100%; height:110px; object-fit:cover; display:block; background:#000; }
+  .item-body { padding:10px; flex-grow: 1; display: flex; flex-direction: column; }
+  .item-name { font-weight:bold; margin-bottom:4px; }
+  .item-price { color:gold; font-size:14px; margin-bottom:8px; }
+  .item-card button { margin-top:auto; width:100%; margin-left:0; margin-right:0; }
+
+  .columns { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+  @media (max-width:900px){ .columns { grid-template-columns:1fr; } }
+  .log { max-height:250px; overflow:auto; }
+  .message { background:#22222d; border-radius:10px; padding:8px 10px; margin-bottom:8px; font-size:14px; line-height:1.5; }
+  .system { border-left:4px solid gold; }
+  .sms { border-left:4px solid #4da6ff; }
+  .event { border-left:4px solid #67ff9a; }
+
+  .popup { position:fixed; inset:0; background:rgba(0,0,0,.85); display:flex; align-items:center; justify-content:center; z-index:999; animation: fadeIn 0.3s; }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  .popup-box {
+    width:min(90vw,420px); background:#101018; border:1px solid gold;
+    border-radius:16px; padding:24px; text-align:center; white-space:pre-line; line-height:1.6; box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+  }
+  .popup-box button { margin-top:18px; }
 </style>
 </head>
 <body>
 
-<!-- หน้าจอเริ่ม -->
-<div id="startScreen" class="screen">
-  <h1 style="font-size:38px">💎 Rich System</h1>
-  <div class="sub" style="margin-bottom:20px">คุณได้รับระบบ โปรดเลือก 1 ระบบ</div>
-  <div class="grid2">
-    <button class="card" onclick="chooseSystem('cashback')"><div class="t">[1] ระบบเงินคืน</div><div class="d">ใช้เงิน 100 ได้คืน 200</div></button>
-    <button class="card" style="opacity:.5" onclick="alert('เร็ว ๆ นี้')"><div class="t">[2] ระบบรายได้วินาที</div><div class="d">เร็ว ๆ นี้</div></button>
-    <button class="card" style="opacity:.5" onclick="alert('เร็ว ๆ นี้')"><div class="t">[3] ระบบเงินไม่จำกัด</div><div class="d">เร็ว ๆ นี้</div></button>
-    <button class="card" style="opacity:.5" onclick="alert('เร็ว ๆ นี้')"><div class="t">[4] ระบบเปย์คนสนิท</div><div class="d">เร็ว ๆ นี้</div></button>
-  </div>
-</div>
-
-<!-- เลือกเพศ -->
-<div id="genderScreen" class="screen hidden">
-  <h1 style="font-size:32px">สร้างตัวละคร</h1>
-  <div class="sub" style="margin-bottom:20px">เลือกเพศ (มีผลกับ sprite ตัวละคร)</div>
-  <div class="grid2">
-    <button class="card" onclick="chooseGender('male')"><div class="t">🧑‍ ชาย</div></button>
-    <button class="card" onclick="chooseGender('female')"><div class="t">👩‍ หญิง</div></button>
+<!-- หน้าจอเลือกระบบ -->
+<div id="startScreen" class="start-screen">
+  <h1>Rich System</h1>
+  <div class="start-sub">คุณได้รับระบบ โปรดเลือก 1 ระบบ</div>
+  <div class="system-grid">
+    <button class="system-card" onclick="chooseSystem('cashback')">
+      <div class="system-name">[1] ระบบเงินคืน</div>
+      <div class="system-desc">ใช้เงิน 100 ได้คืน 200</div>
+      <div class="system-tag">พร้อมเล่น</div>
+    </button>
+    <button class="system-card" onclick="chooseSystem('income')">
+      <div class="system-name">[2] ระบบรายได้วินาที</div>
+      <div class="system-desc">ได้รับเงินทุกวินาที และอัปเกรดได้</div>
+      <div class="system-tag">พร้อมเล่น</div>
+    </button>
+    <button class="system-card" onclick="chooseSystem('unlimited')">
+      <div class="system-name">[3] ระบบเงินไม่จำกัด</div>
+      <div class="system-desc">เบิกเงินได้ไม่จำกัด เน้นเนื้อเรื่อง</div>
+      <div class="system-tag">พร้อมเล่น</div>
+    </button>
+    <button class="system-card locked" onclick="chooseSystem('gift')">
+      <div class="system-name">[4] ระบบเปย์คนสนิท</div>
+      <div class="system-desc">ยิ่งให้ ยิ่งได้โอกาสและผลตอบแทน</div>
+      <div class="system-tag">เร็ว ๆ นี้</div>
+    </button>
   </div>
 </div>
 
 <!-- เกมหลัก -->
 <div id="gameScreen" class="hidden">
-  <h1>💎 Rich System — Pixel Mall</h1>
-  <div id="hud">
-    <div><div class="sub">เงินสด</div><div id="money">1,000 บาท</div><div class="sub" id="spent">ใช้จ่ายรวม: 0 บาท</div></div>
-    <div style="margin-left:auto;text-align:right">
-      <button onclick="earn()">💼 ทำงาน +200</button>
-      <button class="btn-danger" onclick="resetGame()">🗑️ รีเซ็ต</button>
-      <div class="save-status" id="saveStatus">☁️ กำลังเชื่อมต่อ...</div>
+  <h1>Rich System Prototype <button onclick="restartGame()" style="font-size:14px; background:#444; color:#fff; float:right; margin-top:10px;">เปลี่ยนระบบ</button></h1>
+
+  <div class="panel">
+    <div class="sub">ระบบที่เลือก: <span id="systemName">-</span></div>
+    <div class="sub">เงินสด</div>
+    <div class="money" id="money">1,000 บาท</div>
+    <div class="sub" id="spent">ใช้จ่ายรวม: 0 บาท</div>
+    <button onclick="earn()">ทำงาน +200</button>
+    
+    <div id="upgradeSection" style="display:none;">
+       <div class="sub" id="incomeInfo" style="margin-bottom:8px; color:#9f9;">รายได้ปัจจุบัน: 1 บาท/วินาที</div>
+       <button onclick="upgradeIncome()">อัปเกรดรายได้ (ค่าใช้จ่าย: <span id="upgradeCostText">50</span> บาท)</button>
     </div>
   </div>
-  <div id="gameWrap">
-    <canvas id="cv" width="336" height="208" style="width:1008px"></canvas>
-    <div id="floorTag"></div>
-    <div id="hint" class="hidden"></div>
-    <div id="dpad">
-      <div></div><button ontouchstart="kUp=true" ontouchend="kUp=false" onclick="">▲</button><div></div>
-      <button ontouchstart="kLeft=true" ontouchend="kLeft=false">◀</button>
-      <button ontouchstart="pressE()">E</button>
-      <button ontouchstart="kRight=true" ontouchend="kRight=false">▶</button>
-      <div></div><button ontouchstart="kDown=true" ontouchend="kDown=false">▼</button><div></div>
-    </div>
+
+  <div class="panel">
+    <h2>ร้านค้า</h2>
+    <div id="shop" class="shop-grid"></div>
   </div>
-  <div class="sub" style="margin-top:6px">🎮 เดิน: ลูกศร / WASD • เข้าร้าน / ขึ้นลิฟต์: E หรือ Space • เดินไปเคาน์เตอร์ร้านแล้วยืนชิด กด E</div>
+
   <div class="columns">
-    <div class="panel"><h2>🖥️ หน้าต่างระบบ</h2><div id="systemLog" class="log"></div></div>
-    <div class="panel"><h2>📱 SMS มือถือ</h2><div id="smsLog" class="log"></div></div>
-    <div class="panel"><h2>🏆 เหตุการณ์ที่ปลดล็อก</h2><div id="eventLog" class="log"></div></div>
+    <div class="panel"><h2>หน้าต่างระบบ</h2><div id="systemLog" class="log"></div></div>
+    <div class="panel"><h2>SMS มือถือ</h2><div id="smsLog" class="log"></div></div>
+    <div class="panel"><h2>เหตุการณ์ที่ปลดล็อก</h2><div id="eventLog" class="log"></div></div>
   </div>
 </div>
 
-<!-- Modal ร้านค้า / ลิฟต์ -->
-<div id="shopModal" class="modal hidden"><div class="modal-box">
-  <h2 id="shopTitle"></h2><div class="sub" id="shopSub"></div>
-  <div class="shop-grid" id="shopItems"></div>
-  <button onclick="closeShop()" style="margin-top:14px">← ออกจากร้าน</button>
-</div></div>
-<div id="liftModal" class="modal hidden"><div class="modal-box" style="width:min(92vw,360px)">
-  <h2>🛗 ลิฟต์ Rich Mall</h2><div class="sub">เลือกชั้นที่ต้องการ</div>
-  <div id="liftBtns"></div>
-  <button onclick="closeLift()" style="margin-top:10px">← ปิด</button>
-</div></div>
-
-<!-- Firebase -->
-<script type="module">
-import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import{getFirestore,doc,setDoc,getDoc}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const firebaseConfig={apiKey:"AIzaSyBvXijgpC-Pc5sbcXvGSTuurU6EER9I8HI",authDomain:"yh-payroll.firebaseapp.com",projectId:"yh-payroll",storageBucket:"yh-payroll.firebasestorage.app",messagingSenderId:"1041244524681",appId:"1:1041244524681:web:3e3f64d6a7cf34656df658",measurementId:"G-E16PE94YYC"};
-const db=getFirestore(initializeApp(firebaseConfig));
-function getPlayerId(){let id=localStorage.getItem('richSystem_playerId');if(!id){id='player_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);localStorage.setItem('richSystem_playerId',id);}return id;}
-const PLAYER_ID=getPlayerId();
-window.firebaseSave=async d=>{try{await setDoc(doc(db,'richSystemSaves',PLAYER_ID),{...d,updatedAt:Date.now()});st('ok','☁️ บันทึกแล้ว '+new Date().toLocaleTimeString('th-TH'));}catch(e){st('err','⚠️ บันทึกไม่สำเร็จ');localStorage.setItem('richSystemSave_v3',JSON.stringify(d));}};
-window.firebaseLoad=async()=>{try{const s=await getDoc(doc(db,'richSystemSaves',PLAYER_ID));if(s.exists()){st('ok','☁️ โหลดเซฟ Cloud สำเร็จ');return s.data();}return null;}catch(e){const r=localStorage.getItem('richSystemSave_v3');return r?JSON.parse(r):null;}};
-function st(c,t){const el=document.getElementById('saveStatus');el.className='save-status '+c;el.textContent=t;}
-window.firebaseReady=true;window.dispatchEvent(new Event('firebaseReady'));
-</script>
+<!-- Popup -->
+<div id="popup" class="popup hidden">
+  <div class="popup-box">
+    <div id="popupText"></div>
+    <button onclick="closePopup()">ปิด</button>
+  </div>
+</div>
 
 <script>
-// ═══════════ ข้อมูลห้าง + สินค้า (รวมมือถือ 49 รุ่น + VERTUU) ═══════════
-const FLOORS=[
-{name:'🍔 ชั้น 1: อาหาร & เครื่องดื่ม',th:{f1:'#d9c9a8',f2:'#cfc0a0',wall:'#7a4a2a',wallHi:'#9a6a4a'},shops:[
- {label:'แป๊บดี่',icon:'🥤',color:'#e74c3c',ai:null,items:[['น้ำอัดลม แป๊บดี่',50,'🥤'],['ชาเขียว แป๊บดี้',65,'🍵']]},
- {label:'สตาร์บั๊ก',icon:'☕',color:'#2e6bd6',ai:null,items:[['กาแฟลาเต้ สตาร์บั๊ก',150,'☕'],['คาปูชิโน่ สตาร์บั๊ก',165,'🥛'],['เค้กช็อกโกแลต',220,'🍰']]},
- {label:'แม็คโดนัล',icon:'🍔',color:'#e6a817',ai:null,items:[['เบอร์เกอร์ชุด',199,'🍔'],['เฟรนช์ฟรายส์ใหญ่',89,'🍟'],['นักเก็ต 10 ชิ้น',149,'🍗']]},
- {label:'น้ำผลไม้',icon:'🧃',color:'#27ae60',ai:null,items:[['น้ำส้มคั้น',45,'🧃'],['สมูทตี้ผลไม้',85,'🥤']]}]},
-{name:'👟 ชั้น 2: แฟชั่น & กีฬา',th:{f1:'#e8c8d8',f2:'#dfc0d0',wall:'#7a3a5a',wallHi:'#9a5a7a'},shops:[
- {label:'ไนซ์',icon:'👟',color:'#e67e22',ai:null,items:[['รองเท้าผ้าใบ ไนซ์ Air',3500,'👟'],['รองเท้าวิ่ง ไนซ์ Pro',4200,'👟']]},
- {label:'ซาร่า',icon:'🧥',color:'#8e44ad',ai:null,items:[['แจ็คเก็ตหนัง ซาร่า',2800,'🧥'],['เสื้อยืดพรีเมียม',890,'👕'],['กางเกงยีนส์',1590,'👖']]},
- {label:'ยูนิโค',icon:'👔',color:'#16a085',ai:null,items:[['เสื้อเชิ้ตยูนิโค',590,'👔'],['เดรสยูนิโค',990,'👗']]},
- {label:'แอดิดา',icon:'🏃',color:'#2c3e50',ai:null,items:[['รองเท้าแอดิดา',3200,'👟'],['ชุดกีฬา',1490,'🎽']]}]},
-{name:'📱 ชั้น 3: มือถือ & อิเล็กทรอนิกส์',th:{f1:'#b8d8e8',f2:'#a8cfe0',wall:'#2a4a7a',wallHi:'#4a6a9a'},shops:[
- {label:'Appel',icon:'🍎',color:'#bdc3c7',ai:'Siri',items:[['iPhone 12 Pro Max (มือสอง)',8000,'📱'],['iPhone 15',32900,'📱'],['iPhone 15 Pro',42900,'📱'],['iPhone 15 Pro Max',52900,'📱'],['iPhone 16',33900,'📱'],['iPhone 16 Pro',44900,'📱'],['iPhone 16 Pro Max',54900,'📱'],['iPhone 17 Pro Max',59900,'📱'],['iPhone 18 Pro Max',64900,'📱']]},
- {label:'Samsing',icon:'🌌',color:'#3498db',ai:'Bixby',items:[['Galaxy Note 20 Ultra (มือสอง)',12000,'📱'],['Galaxy S23 Ultra',47900,'📱'],['Galaxy Z Flip 5',37900,'📱'],['Galaxy Z Fold 5',62900,'📱'],['Galaxy S24 Ultra',49900,'📱'],['Galaxy Z Fold 6',65900,'📱'],['Galaxy S25 Ultra',52900,'📱'],['Galaxy Z Fold 7',69900,'📱']]},
- {label:'Goggle',icon:'🔍',color:'#27ae60',ai:'Goggle Assistant',items:[['Pixel 6 Pro (มือสอง)',15000,'📱'],['Pixel 8 Pro',32900,'📱'],['Pixel 9 Pro',35900,'📱'],['Pixel 9 Pro XL',40900,'📱'],['Pixel 10 Pro',38900,'📱']]},
- {label:'Tech World',icon:'🔌',color:'#e74c3c',ai:null,items:[['Nokia 3310 (ย้อนยุค)',1500,'📟',null],['Nothang Phone (2a)',12900,'📱','Nothang Assistant'],['Nothang Phone (2)',19900,'📱','Nothang Assistant'],['Nothang Phone (3)',22900,'📱','Nothang Assistant'],['OnePlas 11',24990,'📱','OnePlas AI'],['OnePlas 12',27990,'📱','OnePlas AI'],['OnePlas 13',29990,'📱','OnePlas AI'],['Xiaumi 13 Pro',32990,'📱','Xiao AI'],['Xiaumi 14 Ultra',42990,'📱','Xiao AI'],['Xiaumi 15 Ultra',45990,'📱','Xiao AI'],['Huawai Mate 60 Pro',39990,'📱','Celia'],['Huawai Pura 70 Ultra',46990,'📱','Celia'],['Huawai Mate 70 Pro+',49990,'📱','Celia'],['Oppa Find X7 Ultra',39990,'📱','Oppa AI'],['Oppa Find X8 Ultra',42990,'📱','Oppa AI'],['Vibo X100 Pro',35990,'📱','Vibo Assistant'],['Vibo X200 Pro',38990,'📱','Vibo Assistant'],['Sonny Xperia 1 V',39990,'📱','Sonny Assistant'],['Sonny Xperia 1 VI',42990,'📱','Sonny Assistant']]}]},
-{name:'💎 ชั้น 4: ของหรู (Luxury)',th:{f1:'#e8d898',f2:'#d8c888',wall:'#4a3a1a',wallHi:'#6a5a3a'},shops:[
- {label:'LV',icon:'👜',color:'#8e44ad',ai:null,items:[['กระเป๋า ลุยส์วิตตอง',85000,'👜'],['กระเป๋า LV Limited',150000,'👝']]},
- {label:'Rolek',icon:'⌚',color:'#27ae60',ai:null,items:[['นาฬิกา โรเล็ก Submariner',350000,'⌚'],['นาฬิกา โรเล็ก Daytona',520000,'⌚']]},
- {label:'Chanal',icon:'🧴',color:'#e91e63',ai:null,items:[['น้ำหอม ชาแนล No.5',5500,'🧴'],['น้ำหอม ชาแนล Bleu',4800,'🧴']]},
- {label:'VERTUU',icon:'💎',color:'#FFD700',ai:'VERTUU Concierge',items:[['VERTUU Constellation',185000,'💎'],['VERTUU Aster',220000,'💎'],['VERTUU Signature',350000,'💎'],['VERTUU New Signature',450000,'💎'],['VERTUU Meteor',590000,'💎'],['VERTUU Signature Cobra',1200000,'🐍'],['VERTUU Signature Diamond',2500000,'💠']]}]}
-];
+  // รายการสินค้า (อัปเดตนามสกุลไฟล์ให้ตรงกับ repository)
+  const ITEMS = [
+    { name:'กาแฟหรู',      price:100,  img:'coffee.jpg.png' },
+    { name:'อาหารร้านดัง', price:500,  img:'meal.jpg.png'   },
+    { name:'กระเป๋าแบรนด์', price:2000, img:'bag.jpg.png'    },
+    { name:'นาฬิกาหรู',    price:5000, img:'watch.jpg.png'  }
+  ];
 
-// ═══════════ Pixel Sprites (วาดด้วยโค้ดล้วน) ═══════════
-const PAL_M={h:'#4a2f1b',s:'#ffd9a8',e:'#202020',b:'#2e6bd6',l:'#2b3a55',k:'#1a1a1a'};
-const PAL_F={h:'#7a452a',s:'#ffd9a8',e:'#202020',b:'#e05a9a',l:'#3a3a55',k:'#1a1a1a'};
-const SP={
-downF1:["...hhhhh...","..hhhhhhh..","..hsssssh..","..sessses..","..sssssss..","...sssss...","..bbbbbbb..",".bbbbbbbbb.",".s.bbbbb.s.","...bbbbb...","...l...l...","...l...l...","..kk...kk.."],
-downF2:["...hhhhh...","..hhhhhhh..","..hsssssh..","..sessses..","..sssssss..","...sssss...","..bbbbbbb..",".bbbbbbbbb.",".s.bbbbb.s.","...bbbbb...","..l.....l..","..l.....l..",".kk.....kk."],
-upF1:["...hhhhh...","..hhhhhhh..","..hhhhhhh..","..hhhhhhh..","..hhhhhhh..","...hhhhh...","..bbbbbbb..",".bbbbbbbbb.",".s.bbbbb.s.","...bbbbb...","...l...l...","...l...l...","..kk...kk.."],
-upF2:["...hhhhh...","..hhhhhhh..","..hhhhhhh..","..hhhhhhh..","..hhhhhhh..","...hhhhh...","..bbbbbbb..",".bbbbbbbbb.",".s.bbbbb.s.","...bbbbb...","..l.....l..","..l.....l..",".kk.....kk."],
-rightF1:["...hhhhh...","..hhhhhhh..","..hhssss...","..hhsses...","..hhssss...","...ssss....","..bbbbbb...",".bbbbbbbb..",".s.bbbbbb..","...bbbbb...","...l..l....","...l..l....","..kk..kk..."],
-rightF2:["...hhhhh...","..hhhhhhh..","..hhssss...","..hhsses...","..hhssss...","...ssss....","..bbbbbb...",".bbbbbbbb..",".s.bbbbbb..","...bbbbb...","..l..l.....","..l..l.....",".kk..kk...."]
-};
-const mirror=r=>r.map(row=>row.split('').reverse().join(''));
-SP.leftF1=mirror(SP.rightF1);SP.leftF2=mirror(SP.rightF2);
+  let currentSystem = '';
+  let money = 1000;
+  let totalSpent = 0;
+  let pendingCashbacks = [];
+  
+  // Variables for Income System
+  let incomeRate = 1;
+  let incomeLevel = 1;
+  let upgradeCost = 50;
+  let secondCounter = 0;
 
-// ═══════════ ตัวแปรเกม ═══════════
-const T=16,W=21,H=13;
-const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
-ctx.imageSmoothingEnabled=false;
-let money=1000,totalSpent=0,playerGender='',gameStarted=false,curFloor=0;
-let pendingCashbacks=[],purchaseHistory=[],visitedFloors=new Set(),aiUnlocked={};
-let saveTimeout=null,modalOpen=false;
-const flags={firstWork:false,firstPurchase:false,spent1000:false,luxuryPurchase:false,visitMall:false,allFloors:false,firstPhone:false,vertu:false};
-const popupQueue=[];let popupActive=false;
-let grid=null;
-const player={x:162,y:147,dir:'down',moving:false};
-let kUp=false,kDown=false,kLeft=false,kRight=false;
+  const flags = { firstWork:false, firstPurchase:false, spent1000:false, luxuryPurchase:false, vip1:false, vip2:false };
+  const popupQueue = [];
+  let popupActive = false;
 
-function fmt(n){return n.toLocaleString('th-TH');}
-function buildFloor(fi){
-  const g=[];for(let y=0;y<H;y++){const r=[];for(let x=0;x<W;x++)r.push({t:0});g.push(r);}
-  const set=(x,y,t,e)=>{g[y][x]=Object.assign({t},e||{});};
-  for(let x=0;x<W;x++){set(x,0,1);set(x,H-1,1);}
-  for(let y=0;y<H;y++){set(0,y,1);set(W-1,y,1);}
-  for(let x=1;x<W-1;x++)set(x,1,1);
-  const slots=[[2,4],[7,9],[12,14],[16,18]];
-  FLOORS[fi].shops.forEach((s,i)=>{const[c0,c1]=slots[i];s.c0=c0;s.c1=c1;for(let x=c0;x<=c1;x++)set(x,2,2,{shop:i});});
-  for(let i=FLOORS[fi].shops.length;i<4;i++)set(slots[i][0]+1,2,3);
-  set(2,6,3);set(W-3,6,3);set(2,9,3);set(W-3,9,3);
-  set(10,6,4);set(10,7,4);
-  for(let x=9;x<=11;x++)set(x,H-2,5);
-  return g;
-}
-function solid(x,y){if(x<0||y<0||x>=W||y>=H)return true;return grid[y][x].t!==0;}
-function canMove(nx,ny){
-  const fx=nx+5,fy=ny+12;
-  return !solid(Math.floor((nx+3)/T),Math.floor(fy/T))&&!solid(Math.floor((nx+8)/T),Math.floor(fy/T));
-}
-function getNear(){
-  const tx=Math.floor((player.x+5)/T),ty=Math.floor((player.y+12)/T);
-  const fl=FLOORS[curFloor];
-  for(let i=0;i<fl.shops.length;i++){const s=fl.shops[i];if(ty===3&&tx>=s.c0&&tx<=s.c1)return{type:'shop',i};}
-  if(ty===H-3&&tx>=9&&tx<=11)return{type:'lift'};
-  return null;
-}
+  function format(n){ return n.toLocaleString('th-TH'); }
 
-// ═══════════ วาดภาพ ═══════════
-function drawSprite(rows,pal,x,y){for(let ry=0;ry<rows.length;ry++)for(let rx=0;rx<rows[ry].length;rx++){const c=pal[rows[ry][rx]];if(c){ctx.fillStyle=c;ctx.fillRect(x+rx,y+ry,1,1);}}}
-function draw(){
-  const fl=FLOORS[curFloor];
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
-    const c=grid[y][x],px=x*T,py=y*T;
-    if(c.t===0){ctx.fillStyle=((x+y)&1)?fl.th.f1:fl.th.f2;ctx.fillRect(px,py,T,T);}
-    else if(c.t===1){ctx.fillStyle=fl.th.wall;ctx.fillRect(px,py,T,T);ctx.fillStyle=fl.th.wallHi;ctx.fillRect(px,py,T,3);}
-    else if(c.t===2){const s=fl.shops[c.shop];ctx.fillStyle=s.color;ctx.fillRect(px,py,T,T);ctx.fillStyle='rgba(255,255,255,.35)';ctx.fillRect(px,py,T,3);ctx.fillStyle='rgba(0,0,0,.3)';ctx.fillRect(px,py+10,T,6);}
-    else if(c.t===3){ctx.fillStyle=fl.th.f1;ctx.fillRect(px,py,T,T);ctx.fillStyle='#8a5a33';ctx.fillRect(px+5,py+10,6,5);ctx.fillStyle='#2e8b3a';ctx.fillRect(px+3,py+4,10,7);ctx.fillRect(px+5,py+2,6,3);}
-    else if(c.t===4){ctx.fillStyle=fl.th.f1;ctx.fillRect(px,py,T,T);ctx.fillStyle='#9aa7b0';ctx.fillRect(px+1,py+1,14,14);ctx.fillStyle='#3aa0e0';ctx.fillRect(px+3,py+3,10,10);ctx.fillStyle='#bfe6ff';ctx.fillRect(px+6,py+6,4,4);}
-    else if(c.t===5){ctx.fillStyle='#555';ctx.fillRect(px,py,T,T);ctx.fillStyle='#FFD700';ctx.fillRect(px,py,T,2);ctx.fillStyle='#777';ctx.fillRect(px+2,py+3,5,13);ctx.fillRect(px+9,py+3,5,13);ctx.fillStyle='#333';ctx.fillRect(px+7,py+3,2,13);}
+  function update(){
+    const moneyDisplay = (money === Infinity) ? 'ไม่จำกัด' : format(money) + ' บาท';
+    document.getElementById('money').textContent = moneyDisplay;
+    document.getElementById('spent').textContent = 'ใช้จ่ายรวม: ' + format(totalSpent) + ' บาท';
+
+    const upgradeSec = document.getElementById('upgradeSection');
+    if (currentSystem === 'income') {
+       upgradeSec.style.display = 'block';
+       document.getElementById('incomeInfo').textContent = 'รายได้ปัจจุบัน: ' + format(incomeRate) + ' บาท/วินาที';
+       document.getElementById('upgradeCostText').textContent = format(upgradeCost);
+    } else {
+       upgradeSec.style.display = 'none';
+    }
   }
-  ctx.font='10px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
-  fl.shops.forEach(s=>{
-    const x0=s.c0*T,w=(s.c1-s.c0+1)*T;
-    ctx.fillStyle='#101018';ctx.fillRect(x0,T,w,T);
-    ctx.fillStyle=s.color;ctx.fillRect(x0,T,w,2);ctx.fillRect(x0,T+14,w,2);
-    ctx.fillText(s.icon,x0+w/2,T+9);
-  });
-  const pal=playerGender==='female'?PAL_F:PAL_M;
-  const frame=Math.floor(Date.now()/180)%2;
-  let key;
-  if(player.dir==='down')key='downF'+(frame+1);
-  else if(player.dir==='up')key='upF'+(frame+1);
-  else key=player.dir+'F'+(frame+1);
-  drawSprite(SP[key],pal,Math.round(player.x),Math.round(player.y));
-}
 
-// ═══════════ Game Loop ═══════════
-function loop(){
-  if(gameStarted&&!modalOpen){
-    const sp=1.6;let dx=0,dy=0;
-    if(kUp){dy=-sp;player.dir='up';}
-    else if(kDown){dy=sp;player.dir='down';}
-    else if(kLeft){dx=-sp;player.dir='left';}
-    else if(kRight){dx=sp;player.dir='right';}
-    player.moving=!!(dx||dy);
-    if(dx&&canMove(player.x+dx,player.y))player.x+=dx;
-    if(dy&&canMove(player.x,player.y+dy))player.y+=dy;
-    const near=getNear(),hint=document.getElementById('hint');
-    if(near){hint.classList.remove('hidden');
-      hint.textContent=near.type==='shop'?'🛒 กด E เข้าร้าน '+FLOORS[curFloor].shops[near.i].label:'🛗 กด E เรียกลิฟต์';
-    }else hint.classList.add('hidden');
+  function addLog(id, cls, text){
+    const box = document.getElementById(id);
+    const div = document.createElement('div');
+    div.className = 'message ' + cls;
+    div.textContent = text;
+    box.prepend(div);
   }
-  draw();
-  requestAnimationFrame(loop);
-}
+  const addSystem = t => addLog('systemLog','system',t);
+  const addSms    = t => addLog('smsLog','sms',t);
+  const addEvent  = t => addLog('eventLog','event',t);
 
-// ═══════════ คีย์บอร์ด ═══════════
-document.addEventListener('keydown',e=>{
-  const k=e.key;
-  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(k))e.preventDefault();
-  if(k==='ArrowUp'||k==='w'||k==='W')kUp=true;
-  if(k==='ArrowDown'||k==='s'||k==='S')kDown=true;
-  if(k==='ArrowLeft'||k==='a'||k==='A')kLeft=true;
-  if(k==='ArrowRight'||k==='d'||k==='D')kRight=true;
-  if(k==='e'||k==='E'||k===' '||k==='Enter')pressE();
-});
-document.addEventListener('keyup',e=>{
-  const k=e.key;
-  if(k==='ArrowUp'||k==='w'||k==='W')kUp=false;
-  if(k==='ArrowDown'||k==='s'||k==='S')kDown=false;
-  if(k==='ArrowLeft'||k==='a'||k==='A')kLeft=false;
-  if(k==='ArrowRight'||k==='d'||k==='D')kRight=false;
-});
-function pressE(){
-  if(modalOpen||!gameStarted)return;
-  const near=getNear();if(!near)return;
-  if(near.type==='shop')openShop(near.i);else openLift();
-}
+  function queuePopup(text){
+    popupQueue.push(text);
+    if(!popupActive) showNextPopup();
+  }
+  function showNextPopup(){
+    const popup = document.getElementById('popup');
+    if(popupQueue.length === 0){
+      popupActive = false;
+      popup.classList.add('hidden');
+      return;
+    }
+    popupActive = true;
+    document.getElementById('popupText').textContent = popupQueue[0];
+    popup.classList.remove('hidden');
+  }
+  function closePopup(){
+    popupQueue.shift();
+    showNextPopup();
+  }
 
-// ═══════════ ร้านค้า / ลิฟต์ ═══════════
-function openShop(i){
-  const s=FLOORS[curFloor].shops[i];modalOpen=true;
-  document.getElementById('shopTitle').textContent=s.icon+' ร้าน '+s.label;
-  document.getElementById('shopSub').textContent=FLOORS[curFloor].name+(s.ai?' • มีเลขา AI: '+s.ai:'');
-  const box=document.getElementById('shopItems');box.innerHTML='';
-  s.items.forEach((it,idx)=>{
-    const d=document.createElement('div');d.className='item-card';
-    d.innerHTML='<div class="item-icon">'+it[2]+'</div><div class="item-name">'+it[0]+'</div>'+
-      ((it[3]||s.ai)?'<div class="item-ai">🤖 เลขา: '+(it[3]||s.ai)+'</div>':'')+
-      '<div class="item-price">'+fmt(it[1])+' บาท</div><button onclick="buyItem('+i+','+idx+')">ซื้อ</button>';
-    box.appendChild(d);
-  });
-  document.getElementById('shopModal').classList.remove('hidden');
-}
-function closeShop(){modalOpen=false;document.getElementById('shopModal').classList.add('hidden');}
-function openLift(){
-  modalOpen=true;const b=document.getElementById('liftBtns');b.innerHTML='';
-  FLOORS.forEach((f,i)=>{
-    const btn=document.createElement('button');btn.style.display='block';btn.style.width='100%';
-    btn.textContent=f.name+(i===curFloor?' (อยู่ชั้นนี้)':'');
-    btn.onclick=()=>{goFloor(i);closeLift();};
-    b.appendChild(btn);
-  });
-  document.getElementById('liftModal').classList.remove('hidden');
-}
-function closeLift(){modalOpen=false;document.getElementById('liftModal').classList.add('hidden');}
-function goFloor(i){
-  curFloor=i;grid=buildFloor(i);player.x=162;player.y=147;
-  visitedFloors.add(i);
-  document.getElementById('floorTag').textContent='🏬 '+FLOORS[i].name;
-  if(!flags.visitMall){flags.visitMall=true;addEvent('ปลดล็อก: เข้าห้าง Rich Mall ครั้งแรก');queuePopup('🎉 ปลดล็อกเหตุการณ์\nเข้าห้าง Rich Mall ครั้งแรก!');}
-  if(!flags.allFloors&&visitedFloors.size>=FLOORS.length){flags.allFloors=true;addEvent('ปลดล็อก: สำรวจห้างครบทุกชั้น');queuePopup('🔓 ปลดล็อกเหตุการณ์\nสำรวจห้างครบทุกชั้น!');}
-  addSystem('[ระบบ] ขึ้นลิฟต์มาที่ '+FLOORS[i].name);
-  saveGame();
-}
-
-// ═══════════ ซื้อของ / เงินคืน / ปลดล็อก ═══════════
-function buyItem(si,ii){
-  const s=FLOORS[curFloor].shops[si],it=s.items[ii];
-  if(money<it[1]){queuePopup('❌ เงินไม่พอ\nราคา: '+fmt(it[1])+' บาท\nมี: '+fmt(money)+' บาท');return;}
-  money-=it[1];totalSpent+=it[1];
-  purchaseHistory.push({name:it[0],price:it[1],time:Date.now()});
-  const cb=it[1]*2;pendingCashbacks.push({amount:cb,payAt:Date.now()+5000,status:'pending'});
-  queuePopup('💳 ซื้อ '+it[0]+'\nจ่าย '+fmt(it[1])+' บาท\n💰 เงินคืน '+fmt(cb)+' บาท เข้าใน 5 วิ');
-  addSystem('[ระบบ] ซื้อ '+it[0]+' '+fmt(it[1])+' บาท');
-  addSms('ธนาคาร: จ่าย '+fmt(it[1])+' บาท ที่ '+s.label);
-  // ปลดล็อกต่างๆ
-  if(!flags.firstPurchase){flags.firstPurchase=true;addEvent('ปลดล็อก: การใช้จ่ายครั้งแรก');queuePopup('🔓 ปลดล็อก: การใช้จ่ายครั้งแรก');}
-  if(!flags.spent1000&&totalSpent>=1000){flags.spent1000=true;addEvent('ปลดล็อก: เริ่มใช้เงินเป็น (ครบ 1,000)');queuePopup('🔓 ปลดล็อก: เริ่มใช้เงินเป็น');}
-  if(!flags.luxuryPurchase&&it[1]>=5000){flags.luxuryPurchase=true;addEvent('ปลดล็อก: ของหรูชิ้นแรก');queuePopup('🔓 ปลดล็อก: ของหรูชิ้นแรก\nพนักงานเริ่มจดจำคุณได้!');}
-  if(curFloor===2&&!flags.firstPhone){flags.firstPhone=true;addEvent('ปลดล็อก: โทรศัพท์เครื่องใหม่');queuePopup('📱 ปลดล็อก: โทรศัพท์เครื่องใหม่!');}
-  const ai=it[3]||s.ai;
-  if(ai&&!aiUnlocked[ai]){aiUnlocked[ai]=true;addEvent('ปลดล็อกเลขา: '+ai);
-    queuePopup(ai==='VERTUU Concierge'?'👑 ปลดล็อก: VERTUU Concierge\nคุณมีเลขาส่วนตัวระดับมหาเศรษฐีแล้ว!\nบริการจองร้านอาหาร มิชลิน, ตั๋ว VIP, การลงทุนพิเศษ ตลอด 24 ชม.':'🤖 ปลดล็อกเลขาส่วนตัว: '+ai+'\n'+ai+' จะคอยช่วยเหลือคุณตลอดไป');}
-  update();saveGame();
-}
-setInterval(()=>{
-  const now=Date.now();
-  pendingCashbacks.forEach(c=>{
-    if(c.status==='pending'&&now>=c.payAt){c.status='completed';money+=c.amount;
-      addSystem('[ระบบ] 💸 เงินคืน '+fmt(c.amount)+' บาทเข้าบัญชี');
-      addSms('ธนาคาร: เงินเข้า '+fmt(c.amount)+' บาท (เงินคืน)');update();}
-  });
-},250);
-
-// ═══════════ UI / Save ═══════════
-function update(){document.getElementById('money').textContent=fmt(money)+' บาท';document.getElementById('spent').textContent='ใช้จ่ายรวม: '+fmt(totalSpent)+' บาท';}
-function addLog(id,cls,t){const d=document.createElement('div');d.className='message '+cls;d.textContent=t;document.getElementById(id).prepend(d);}
-const addSystem=t=>addLog('systemLog','system',t),addSms=t=>addLog('smsLog','sms',t),addEvent=t=>addLog('eventLog','event',t);
-function queuePopup(t){popupQueue.push(t);if(!popupActive)nextPopup();}
-function nextPopup(){
-  if(!popupQueue.length){popupActive=false;return;}
-  popupActive=true;alert(popupQueue.shift());nextPopup();
-}
-function earn(){money+=200;update();addSystem('[ระบบ] 💼 ทำงาน +200 บาท');addSms('ธนาคาร: เงินเข้า 200 บาท');
-  if(!flags.firstWork){flags.firstWork=true;addEvent('ปลดล็อก: งานแรกของคุณ');queuePopup('🔓 ปลดล็อก: งานแรกของคุณ');}saveGame();}
-function saveGame(){
-  const data={money,totalSpent,playerGender,gameStarted,flags:{...flags},aiUnlocked:{...aiUnlocked},purchaseHistory:purchaseHistory.slice(-50)};
-  localStorage.setItem('richSystemSave_v3',JSON.stringify(data));
-  clearTimeout(saveTimeout);saveTimeout=setTimeout(()=>{if(window.firebaseSave)window.firebaseSave(data);},1000);
-}
-async function loadGame(){
-  let d=null;if(window.firebaseLoad)d=await window.firebaseLoad();
-  if(!d){const r=localStorage.getItem('richSystemSave_v3');if(r)try{d=JSON.parse(r);}catch(e){}}
-  if(!d)return false;
-  money=d.money??1000;totalSpent=d.totalSpent??0;playerGender=d.playerGender??'';gameStarted=d.gameStarted??false;
-  if(d.flags)Object.keys(flags).forEach(k=>{flags[k]=d.flags[k]??false;});
-  aiUnlocked=d.aiUnlocked??{};purchaseHistory=d.purchaseHistory??[];
-  return true;
-}
-function resetGame(){if(confirm('รีเซ็ตทั้งหมด?')){localStorage.removeItem('richSystemSave_v3');location.reload();}}
-
-// ═══════════ Flow ═══════════
-function chooseSystem(id){document.getElementById('startScreen').classList.add('hidden');document.getElementById('genderScreen').classList.remove('hidden');}
-function chooseGender(g){
-  playerGender=g;gameStarted=true;
-  document.getElementById('genderScreen').classList.add('hidden');
-  document.getElementById('gameScreen').classList.remove('hidden');
-  grid=buildFloor(0);visitedFloors.add(0);
-  document.getElementById('floorTag').textContent='🏬 '+FLOORS[0].name;
-  addSystem('[ระบบ] เปิดระบบเงินคืน | เพศ '+(g==='male'?'ชาย':'หญิง'));
-  queuePopup('💎 เปิดระบบเงินคืน!\n🎮 ลูกศร/WASD = เดิน\n🛒 ยืนชิดเคาน์เตอร์แล้วกด E = เข้าร้าน\n🛗 กด E ที่ลิฟต์ = เปลี่ยนชั้น');
-  update();saveGame();
-}
-async function init(){
-  await new Promise(r=>{if(window.firebaseReady)return r();const t=setTimeout(r,3000);window.addEventListener('firebaseReady',()=>{clearTimeout(t);r();});});
-  const has=await loadGame();
-  if(has&&gameStarted&&playerGender){
+  function chooseSystem(id){
+    // Reset State
+    totalSpent = 0;
+    pendingCashbacks = [];
+    incomeLevel = 1;
+    incomeRate = 1;
+    upgradeCost = 50;
+    secondCounter = 0;
+    flags.firstWork = false; flags.firstPurchase = false; flags.spent1000 = false; 
+    flags.luxuryPurchase = false; flags.vip1 = false; flags.vip2 = false;
+    
+    popupQueue.length = 0;
+    popupActive = false;
+    document.getElementById('popup').classList.add('hidden');
+    
+    document.getElementById('systemLog').innerHTML = '';
+    document.getElementById('smsLog').innerHTML = '';
+    document.getElementById('eventLog').innerHTML = '';
+    
     document.getElementById('startScreen').classList.add('hidden');
-    document.getElementById('genderScreen').classList.add('hidden');
     document.getElementById('gameScreen').classList.remove('hidden');
-    grid=buildFloor(0);visitedFloors.add(0);
-    document.getElementById('floorTag').textContent='🏬 '+FLOORS[0].name;
-    addSystem('[ระบบ] โหลดเซฟสำเร็จ ยินดีต้อนรับกลับ!');
+    
+    currentSystem = id;
+
+    if(id === 'cashback') {
+      money = 1000;
+      document.getElementById('systemName').textContent = 'ระบบเงินคืน';
+      addSystem('[ระบบ] คุณเลือก ระบบเงินคืน');
+      addSms('Rich System: เปิดใช้งานระบบเงินคืนแล้ว');
+      queuePopup('[ระบบ] เปิดใช้งานระบบเงินคืน\nใช้เงิน 100 ได้คืน 200\nเงินคืนจะเข้าหลัง 5 วินาที');
+    } else if(id === 'income') {
+      money = 0;
+      document.getElementById('systemName').textContent = 'ระบบรายได้วินาที';
+      addSystem('[ระบบ] คุณเลือก ระบบรายได้วินาที');
+      addSms('Rich System: เปิดใช้งานระบบรายได้วินาที');
+      queuePopup('[ระบบ] เปิดใช้งานระบบรายได้วินาที\nคุณจะได้รับเงินทุกวินาที\nสามารถอัปเกรดรายได้ได้');
+    } else if(id === 'unlimited') {
+      money = Infinity;
+      document.getElementById('systemName').textContent = 'ระบบเงินไม่จำกัด';
+      addSystem('[ระบบ] คุณเลือก ระบบเงินไม่จำกัด');
+      addSms('Rich System: เปิดใช้งานระบบเงินไม่จำกัด');
+      queuePopup('[ระบบ] เปิดใช้งานระบบเงินไม่จำกัด\nคุณคือผู้ที่มีเงินไม่จำกัด\nการใช้จ่ายจะเปลี่ยนแปลงเนื้อเรื่อง!');
+    } else {
+      queuePopup('ระบบนี้ยังไม่ได้เปิดใน prototype นี้\nเร็ว ๆ นี้');
+      document.getElementById('gameScreen').classList.add('hidden');
+      document.getElementById('startScreen').classList.remove('hidden');
+      return;
+    }
+    renderShop();
+    update();
   }
-  update();loop();
-}
-init();
+
+  function restartGame(){
+    document.getElementById('gameScreen').classList.add('hidden');
+    document.getElementById('startScreen').classList.remove('hidden');
+  }
+
+  function earn(){
+    if(currentSystem === 'unlimited') {
+       queuePopup('คุณมีเงินไม่จำกัด\nไม่จำเป็นต้องทำงานแล้ว!');
+       return;
+    }
+    money += 200;
+    update();
+    addSystem('[ระบบ] คุณทำงานสำเร็จ ได้รับเงิน 200 บาท');
+    addSms('ธนาคาร: เงินเข้าบัญชี 200 บาท');
+
+    if(!flags.firstWork){
+      flags.firstWork = true;
+      addEvent('ปลดล็อกเหตุการณ์: งานแรกของคุณ');
+      addSms('Rich System: ปลดล็อกเหตุการณ์ งานแรกของคุณ');
+      queuePopup('ปลดล็อกเหตุการณ์\nงานแรกของคุณ\nคุณเริ่มมีเงินสำหรับใช้จ่ายแล้ว');
+    }
+  }
+
+  function upgradeIncome(){
+    if(currentSystem !== 'income') return;
+    if(money >= upgradeCost) {
+       money -= upgradeCost;
+       incomeRate += 1;
+       incomeLevel++;
+       upgradeCost = Math.floor(50 * Math.pow(1.5, incomeLevel - 1));
+       addSystem('[ระบบ] อัปเกรดสำเร็จ! รายได้เพิ่มเป็น ' + incomeRate + ' บาท/วินาที');
+       update();
+    } else {
+       queuePopup('เงินสดไม่พอสำหรับการอัปเกรด');
+    }
+  }
+
+  function buy(item){
+    if(currentSystem === 'unlimited') {
+      // Infinite money, don't subtract
+    } else {
+      if(money < item.price){
+        queuePopup('เงินสดไม่พอ\nลองทำงานเพิ่มก่อน');
+        addSystem('[ระบบ] ธุรกรรมล้มเหลว: เงินสดไม่พอ');
+        addSms('ธนาคาร: ธุรกรรมล้มเหลว เงินคงเหลือไม่พอ');
+        return;
+      }
+      money -= item.price;
+    }
+
+    totalSpent += item.price;
+    update();
+
+    if(currentSystem === 'cashback') {
+      const cashback = item.price * 2;
+      pendingCashbacks.push({ amount: cashback, payAt: Date.now() + 5000, status:'pending' });
+      queuePopup(
+        '[ระบบ] ตรวจพบการใช้จ่าย\n' +
+        'รายการ: ' + item.name + '\n' +
+        'จำนวนเงิน: ' + format(item.price) + ' บาท\n' +
+        'เงินคืน ' + format(cashback) + ' บาทจะเข้าใน 5 วินาที'
+      );
+    } else if (currentSystem === 'unlimited') {
+      triggerStoryEvent(item);
+    }
+
+    addSystem('[ระบบ] คุณซื้อ ' + item.name + ' ราคา ' + format(item.price) + ' บาท');
+    if(currentSystem !== 'unlimited') addSms('ธนาคาร: คุณใช้จ่าย ' + format(item.price) + ' บาท');
+
+    unlockAfterPurchase(item.price);
+  }
+
+  function triggerStoryEvent(item) {
+    if(item.name === 'กาแฟหรู') {
+       if(!flags.vip1) {
+          flags.vip1 = true;
+          queuePopup('[เนื้อเรื่อง] คุณซื้อกาแฟหรู\nเจ้าของร้านตกตะลึงที่คุณควักเงินสดจ่ายแบบไม่มองราคา\nคุณกลายเป็นลูกค้า VIP ของร้าน');
+          addEvent('ปลดล็อกเหตุการณ์: ลูกค้า VIP');
+       }
+    } else if(item.name === 'กระเป๋าแบรนด์') {
+       if(!flags.vip2) {
+          flags.vip2 = true;
+          queuePopup('[เนื้อเรื่อง] คุณซื้อกระเป๋าแบรนด์\nผู้จัดการร้านรีบออกมาต้อนรับและปิดร้านเพื่อให้คุณเลือกชมคนเดียว\nชื่อเสียงของคุณเริ่มโด่งดัง');
+          addEvent('ปลดล็อกเหตุการณ์: ปิดร้านช้อปส่วนตัว');
+       }
+    } else if(item.name === 'นาฬิกาหรู') {
+       queuePopup('[เนื้อเรื่อง] คุณซื้อนาฬิกาหรู\nพนักงานต่างก้มหัวให้ความเคารพ\nเงินคืออำนาจที่แท้จริง');
+    } else {
+       queuePopup('[เนื้อเรื่อง] คุณซื้อ ' + item.name + '\nผู้คนรอบข้างเริ่มจับจ้องมาที่คุณ\nคุณคือบุคคลลึกลับที่ร่ำรวยมหาศาล');
+    }
+  }
+
+  function processCashbacks(){
+    const now = Date.now();
+    let updated = false;
+    pendingCashbacks.forEach(c => {
+      if(c.status === 'pending' && now >= c.payAt){
+        c.status = 'completed';
+        money += c.amount;
+        addSystem('[ระบบ] เงินคืน ' + format(c.amount) + ' บาทเข้าบัญชีแล้ว');
+        addSms('ธนาคาร: เงินเข้าบัญชี ' + format(c.amount) + ' บาท (เงินคืนจากระบบ)');
+        updated = true;
+      }
+    });
+    if(updated) update();
+  }
+  setInterval(processCashbacks, 250);
+
+  setInterval(() => {
+    if(currentSystem === 'income') {
+       money += incomeRate;
+       secondCounter++;
+       if(secondCounter % 5 === 0) {
+          addSms('Rich System: สรุปยอด 5 วินาที เงินเข้า ' + format(incomeRate * 5) + ' บาท');
+       }
+       update();
+    }
+  }, 1000);
+
+  function unlockAfterPurchase(price){
+    if(!flags.firstPurchase){
+      flags.firstPurchase = true;
+      addEvent('ปลดล็อกเหตุการณ์: การใช้จ่ายครั้งแรก');
+      addSms('Rich System: ปลดล็อกเหตุการณ์ การใช้จ่ายครั้งแรก');
+      queuePopup('ปลดล็อกเหตุการณ์\nการใช้จ่ายครั้งแรก\nโลกเริ่มตอบสนองต่อการใช้จ่ายของคุณแล้ว');
+    }
+    if(!flags.spent1000 && totalSpent >= 1000){
+      flags.spent1000 = true;
+      addEvent('ปลดล็อกเหตุการณ์: เริ่มใช้เงินเป็น');
+      addSms('Rich System: ปลดล็อกเหตุการณ์ เริ่มใช้เงินเป็น');
+      queuePopup('ปลดล็อกเหตุการณ์\nเริ่มใช้เงินเป็น\nคุณใช้จ่ายรวมครบ 1,000 บาทแล้ว');
+    }
+    if(!flags.luxuryPurchase && price >= 2000){
+      flags.luxuryPurchase = true;
+      addEvent('ปลดล็อกเหตุการณ์: ของหรูชิ้นแรก');
+      addSms('Rich System: ปลดล็อกเหตุการณ์ ของหรูชิ้นแรก');
+      queuePopup('ปลดล็อกเหตุการณ์\nของหรูชิ้นแรก\nพนักงานเริ่มจดจำคุณได้แล้ว');
+    }
+  }
+
+  function renderShop(){
+    const shop = document.getElementById('shop');
+    shop.innerHTML = '';
+    ITEMS.forEach((item, i) => {
+      const card = document.createElement('div');
+      card.className = 'item-card';
+      card.innerHTML =
+        '<img src="' + item.img + '" alt="' + item.name + '" onerror="this.style.display=\'none\'">' +
+        '<div class="item-body">' +
+          '<div class="item-name">' + item.name + '</div>' +
+          '<div class="item-price">' + format(item.price) + ' บาท</div>' +
+          '<button onclick="buy(ITEMS[' + i + '])">ซื้อ</button>' +
+        '</div>';
+      shop.appendChild(card);
+    });
+  }
+
+  renderShop();
+  update();
 </script>
 </body>
 </html>
