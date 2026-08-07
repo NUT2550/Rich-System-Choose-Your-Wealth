@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rich System 4.5 — เงินไม่จำกัด ∞ • HQ แยกหน้า • กวาดซื้อทั้งตลาด</title>
+<title>Rich System 4.6 — Cloud Save Realtime (Firebase)</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/noto-sans-thai@latest/index.css">
 <style>
 :root{--bg:#0b0b10;--panel:#16161f;--panel2:#1d1d29;--line:#2c2c3a;--gold:#f5c542;--gold2:#ffd77a;--txt:#f2f2f7;--dim:#9a9ab0;--green:#67ff9a;--red:#ff6b6b;--blue:#4da6ff}
@@ -39,6 +39,7 @@ body{margin:0;background:radial-gradient(1200px 500px at 80% -10%,rgba(245,197,6
 .money{font-size:26px;font-weight:800;color:var(--gold);line-height:1.1;text-shadow:0 0 18px rgba(245,197,66,.35)}
 .money-sub{font-size:11px;color:var(--dim)}
 .lv-chip{background:linear-gradient(135deg,#3a2c07,#241b04);border:1px solid var(--gold);color:var(--gold2);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;white-space:nowrap}
+.cloud-chip{background:linear-gradient(135deg,#0f2a3a,#101820);border:1px solid var(--blue);color:#9ad0ff;border-radius:999px;padding:6px 12px;font-size:11px;font-weight:700;white-space:nowrap}
 .icon-btn{background:#1d1d29;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:8px 10px;cursor:pointer;font:inherit;font-size:14px}
 .float-num{position:absolute;right:0;top:-6px;font-weight:800;color:var(--green);animation:floatUp 1.2s ease forwards;pointer-events:none;text-shadow:0 0 10px rgba(103,255,154,.5)}
 .float-num.neg{color:var(--red)}
@@ -176,6 +177,7 @@ canvas{background:#101018;border:1px solid var(--line);border-radius:10px;width:
 .set-row input[type=checkbox]{width:20px;height:20px;accent-color:var(--gold)}
 .set-box textarea{width:100%;height:70px;background:#0d0d14;color:var(--dim);border:1px solid var(--line);border-radius:10px;font-size:11px;padding:8px;font-family:monospace}
 .set-label{font-size:12px;color:var(--dim);margin:10px 0 4px;text-align:left}
+.cloud-status{background:#0d1a24;border:1px solid #234a5c;color:#9ad0ff;border-radius:10px;padding:8px 12px;font-size:12px;margin-bottom:8px;text-align:left;line-height:1.6}
 .toasts{position:fixed;top:70px;right:14px;z-index:998;display:flex;flex-direction:column;gap:8px;max-width:300px}
 .toast{background:#141420ee;border:1px solid var(--line);border-radius:12px;padding:9px 12px;font-size:12.5px;line-height:1.5;cursor:pointer}
 .toast.t-sms{border-left:4px solid var(--blue)}.toast.t-sys{border-left:4px solid var(--gold)}.toast.t-ev{border-left:4px solid var(--green)}
@@ -197,7 +199,7 @@ canvas{background:#101018;border:1px solid var(--line);border-radius:10px;width:
     <button class="system-card" onclick="chooseSystem('unlimited')"><div class="system-name">[3] ระบบเงินไม่จำกัด</div><div class="system-desc">เงิน ∞ ตั้งแต่เริ่ม ไม่ต้องเบิก • ปุ่มกวาดซื้อหุ้นทั้งตลาด • เนื้อเรื่อง 11 เหตุการณ์ • กรรมกำหนดจุดจบ</div><div class="system-tag">พร้อมเล่น • เนื้อเรื่อง</div></button>
     <button class="system-card" onclick="chooseSystem('gift')"><div class="system-name">[4] ระบบเปย์คนสนิท</div><div class="system-desc">ยิ่งให้ ยิ่งได้ — NPC ตอบแทนน้ำใจพร้อมผลตอบแทน</div><div class="system-tag">พร้อมเล่น</div></button>
   </div>
-  <div class="start-foot">Rich System 4.5 • 11 ฉาก (รวม HQ ทีมงาน) • ตลาดทุน 57 หลักทรัพย์ • เงินไม่จำกัด ∞</div>
+  <div class="start-foot">Rich System 4.6 • ☁️ บันทึกคลาวด์แบบเรียลไทม์ (Firebase) • เล่นต่อข้ามอุปกรณ์ได้ผ่าน Player ID</div>
 </div>
 
 <div id="gameScreen" class="hidden">
@@ -205,6 +207,7 @@ canvas{background:#101018;border:1px solid var(--line);border-radius:10px;width:
     <button class="who-btn" onclick="openProfile()"><div class="avatar"><img id="playerPic" alt=""></div>
       <div class="who"><div class="pname" id="pName">ผู้เล่น</div><div class="ptitle" id="pTitle">ผู้ถือระบบ</div><div class="pview">👤 กดดูโปรไฟล์</div></div></button>
     <div class="lv-chip" id="lvChip">💸 เงินคืนคงที่ 200%</div>
+    <div class="cloud-chip" id="cloudChip">☁️ กำลังเชื่อมต่อ...</div>
     <div class="money-box" id="moneyBox"><div class="money-label">เงินสด</div><div class="money" id="money">0 บาท</div><div class="money-sub" id="spentLine"></div></div>
     <button class="icon-btn" id="muteBtn" onclick="toggleMute()">🔊</button>
     <button class="icon-btn" onclick="openSettings()">⚙️</button>
@@ -255,16 +258,23 @@ canvas{background:#101018;border:1px solid var(--line);border-radius:10px;width:
       <div id="tab-asset" class="log hidden"></div>
     </div></aside>
   </div>
-  <div class="foot">Rich System 4.5 • โหมดเงินไม่จำกัด: เงิน ∞ ไม่ต้องเบิก • ปัดซ้าย/ขวาบนภาพฉากเพื่อเปลี่ยนฉาก</div>
+  <div class="foot">Rich System 4.6 • ☁️ ซิงก์คลาวด์เรียลไทม์ • ปัดซ้าย/ขวาบนภาพฉากเพื่อเปลี่ยนฉาก</div>
 </div>
 
 <div id="popup" class="popup hidden"><div class="popup-box"><img id="popupImg" class="popup-img hidden" alt=""><div class="popup-title" id="popupTitle"></div><div class="popup-text" id="popupText"></div><div class="popup-btns" id="popupBtns"></div></div></div>
 <div id="profileModal" class="popup hidden"><div class="popup-box"><img id="profPic" class="popup-img" alt=""><div class="popup-title" id="profName">-</div><div class="prof-sub" id="profSub">-</div><div class="stat-grid" id="profStats"></div><div class="prof-boosts" id="profBoosts"></div><div class="popup-btns"><button onclick="closeProfile()">ปิด</button></div></div></div>
 <div id="settingsModal" class="popup hidden"><div class="popup-box set-box"><div class="popup-title">⚙️ ตั้งค่า</div>
+  <div class="set-label">☁️ Cloud Save (เรียลไทม์ ผ่าน Firebase)</div>
+  <div class="cloud-status" id="cloudStatus">🟡 กำลังเชื่อมต่อ...</div>
+  <div class="set-row"><span>☁️ ซิงก์คลาวด์อัตโนมัติ</span><input type="checkbox" id="setCloud" onchange="setOpt('cloud',this.checked)"></div>
+  <div class="set-label">Player ID ของคุณ (คัดลอกไปใส่อุปกรณ์อื่นเพื่อเล่นต่อ)</div>
+  <div class="inv-row"><input id="cloudIdBox" readonly onclick="this.select()"><button onclick="copyCloudId()">คัดลอก</button></div>
+  <div class="set-label">เชื่อมต่อเซฟจากอุปกรณ์อื่น (ใส่ Player ID)</div>
+  <div class="inv-row"><input id="cloudConnect" placeholder="เช่น RICH-ABC12345"><button onclick="connectCloudId()">เชื่อมต่อ</button></div>
   <div class="set-row"><span>🔊 เสียงเอฟเฟกต์</span><input type="checkbox" id="setSound" onchange="setOpt('sound',this.checked)"></div>
   <div class="set-row"><span>🔔 การแจ้งเตือน (Toast)</span><input type="checkbox" id="setNotif" onchange="setOpt('notif',this.checked)"></div>
-  <div class="set-row"><span>💾 บันทึกอัตโนมัติ</span><input type="checkbox" id="setAuto" onchange="setOpt('autosave',this.checked)"></div>
-  <div class="set-label">📤 Export Save</div><textarea id="exportBox" readonly onclick="this.select()"></textarea>
+  <div class="set-row"><span>💾 บันทึกอัตโนมัติ (เครื่องนี้)</span><input type="checkbox" id="setAuto" onchange="setOpt('autosave',this.checked)"></div>
+  <div class="set-label">📤 Export Save (สำรองแบบไฟล์)</div><textarea id="exportBox" readonly onclick="this.select()"></textarea>
   <div class="set-label">📥 Import Save</div><textarea id="importBox" placeholder="วางโค้ด save ที่นี่"></textarea>
   <div class="popup-btns"><button class="ghost" onclick="importSave()">📥 นำเข้า</button><button onclick="closeSettings()">ปิด</button></div></div></div>
 <nav id="bottomNav">
@@ -275,7 +285,67 @@ canvas{background:#101018;border:1px solid var(--line);border-radius:10px;width:
 </nav>
 <div class="toasts" id="toasts"></div>
 
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
 <script>
+/* ================= Firebase Config ================= */
+const FIREBASE_CONFIG={apiKey:"AIzaSyBvXijgpC-Pc5sbcXvGSTuurU6EER9I8HI",authDomain:"yh-payroll.firebaseapp.com",projectId:"yh-payroll",storageBucket:"yh-payroll.firebasestorage.app",messagingSenderId:"1041244524681",appId:"1:1041244524681:web:3e3f64d6a7cf34656df658",measurementId:"G-E16PE94YYC"};
+let CLOUD={db:null,ok:false,ref:null,unsub:null,pushTimer:null,lastPushTs:0};
+function getCloudId(){let id=localStorage.getItem('rich_cloud_id');if(!id){id='RICH-'+Math.random().toString(36).slice(2,10).toUpperCase();localStorage.setItem('rich_cloud_id',id);}return id;}
+function cloudStatus(t){const el=$('cloudStatus');if(el)el.innerHTML=t;const c=$('cloudChip');if(c)c.textContent='☁️ '+(t.includes('🟢')?'ซิงก์คลาวด์แล้ว':(t.includes('🔴')?'คลาวด์ lỗi':'กำลังเชื่อมต่อ...'));}
+function initCloud(){
+ try{
+  if(!window.firebase||!firebase.firestore){cloudStatus('🔴 โหลด Firebase SDK ไม่สำเร็จ (ต้องต่ออินเทอร์เน็ต)');return;}
+  if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);
+  CLOUD.db=firebase.firestore();
+  attachCloudDoc();
+ }catch(e){cloudStatus('🔴 เชื่อมต่อไม่สำเร็จ: '+e.message);}
+}
+function attachCloudDoc(){
+ if(CLOUD.unsub){try{CLOUD.unsub();}catch(e){}}
+ const id=getCloudId();
+ CLOUD.ref=CLOUD.db.collection('richSaves').doc(id);
+ cloudStatus('🟡 กำลังเชื่อมต่อ... (ID: '+id+')');
+ CLOUD.unsub=CLOUD.ref.onSnapshot(snap=>{
+   CLOUD.ok=true;
+   cloudStatus('🟢 เชื่อมต่อคลาวด์แล้ว (เรียลไทม์)<br>Player ID: <b>'+id+'</b>');
+   const cb=$('cloudIdBox');if(cb)cb.value=id;
+   if(snap.exists){
+     const d=snap.data();
+     if(d.ts&&d.ts>(S.cloudTs||0)&&d.ts!==CLOUD.lastPushTs){
+       try{
+         applyState(JSON.parse(d.json));
+         S.cloudTs=d.ts;
+         if(S.started&&S.system){renderAll();toast('ev','☁️ โหลดข้อมูลล่าสุดจากคลาวด์แล้ว');}
+       }catch(e){}
+     }
+   }
+ },err=>{CLOUD.ok=false;cloudStatus('🔴 เชื่อมต่อไม่ได้: '+err.message+'<br>ตรวจ Firestore Rules ใน Firebase Console ให้ phép อ่าน/เขียน');});
+}
+function cloudPush(){
+ if(!CLOUD.ok||!CLOUD.ref||S.set.cloud===false)return;
+ clearTimeout(CLOUD.pushTimer);
+ CLOUD.pushTimer=setTimeout(()=>{
+   S.cloudTs=Date.now();CLOUD.lastPushTs=S.cloudTs;
+   try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));}catch(e){}
+   CLOUD.ref.set({json:JSON.stringify(S),ts:S.cloudTs,name:S.name,system:S.system||'-',spent:S.spent||0})
+     .then(()=>cloudStatus('🟢 ซิงก์ล่าสุด '+new Date().toLocaleTimeString('th-TH')+' (เรียลไทม์)<br>Player ID: <b>'+getCloudId()+'</b>'))
+     .catch(e=>cloudStatus('🔴 บันทึกขึ้นคลาวด์ไม่สำเร็จ: '+e.message));
+ },700);
+}
+function copyCloudId(){const el=$('cloudIdBox');el.select();try{navigator.clipboard.writeText(el.value);}catch(e){}try{document.execCommand('copy');}catch(e){}toast('sys','📋 คัดลอก Player ID แล้ว — นำไปใส่อุปกรณ์อื่นได้เลย');}
+function connectCloudId(){
+ const v=($('cloudConnect').value||'').trim().toUpperCase();
+ if(!v){toast('sys','ใส่ Player ID ก่อน');return;}
+ localStorage.setItem('rich_cloud_id',v);
+ S.cloudTs=0;
+ attachCloudDoc();
+ toast('ev','☁️ กำลังเชื่อมต่อไปยัง ID: '+v);
+}
+
+/* ================= ข้อมูลเกม ================= */
 const U='https://image.qwenlm.ai/public_source/50b56f79-3ba1-4524-84d0-2d238be868ef/';
 const IMG={home:U+'1c1a6819c-916e-4409-aed1-2a814cdcdc0e.png',market:U+'14d3966e0-4652-486d-a38e-3ed5d5044a47.png',mall:U+'1c5cbb633-a8fb-4fee-a1f2-73ca48149d5f.png',dining:U+'19a1872ab-c428-4693-a0d7-9f758f0c6772.png',invest:U+'1a1b9e9ba-cd29-4a4b-a28a-c1bbd3e79224.png',car:U+'15e537f99-5da3-4755-97af-702d4f4eaabe.png',bikeBg:U+'169d302e2-ed03-4a38-901e-3b45ea430979.png',skyBg:U+'1e07e5d76-2fb4-47cc-866c-0677ef98bdd7.png',seaBg:U+'1f00869ff-7ec4-4a12-a7ae-072870aee813.png',realty:U+'11e9cb0b2-4a2e-4edf-a402-725b5be55969.png',player:U+'15222fdf7-3caf-4a88-8238-31ce415c59e5.png',mint:U+'1b7e247a4-7990-40e1-af12-a19f3d8245e8.png',lisa:U+'159318200-47a7-458f-9e01-7818031ea4ea.png',win:U+'15cf6290a-9eac-4c3b-92e7-df94990d8827.png',thana:U+'1f0a647bc-e1e1-459c-9984-6d1b4e19503b.png'};
 const P={coffee:U+'1070a327f-604b-4b72-966b-2fadcacfa682.png',noodles:U+'18a581f6a-69ae-4c8e-a54c-ae794a6ebdd1.png',tshirt:U+'150322b77-37fe-4213-82cf-f0b07e3fec49.png',headphone:U+'19853909d-58a9-43a7-95d3-a47172b72349.png',gaming:U+'14c25b5e8-5570-41cf-acee-eee669cb3fd6.png',pc:U+'18986ca00-ee20-4002-9fe1-996b106b69ef.png',street:U+'10f074344-1cca-4d2c-a669-9f35168c012a.png',vintage:U+'116fc19e3-d1ef-44c0-a8c5-b8bc76b6c5b8.png',sneaker:U+'1d5079255-5037-4622-87fa-c1b88ef8fadb.png',phone_s:U+'14e02f5e9-d062-43f9-8c5b-b328845a540a.png',amulet:U+'182309c7e-d298-4bc2-8b4b-5f45456c8f11.png',perfume:U+'11afddb1f-a0c1-46f5-b50c-e4400bdbf6c3.png',suit:U+'1ec6c95e4-72a1-45b8-85ea-3e6d17a0068f.png',bag:U+'189274055-0868-4078-8d91-27a294da15b2.png',phone_f:U+'1dbdc4be5-fbe4-4c08-98de-8acc196c6e9c.png',watch:U+'147d70780-0d0d-426d-9463-ad38199cc248.png',vip:U+'1c059b692-1480-4546-8634-ad93ac47cd47.png',lunch:U+'1adc3291b-b102-4f62-b2d5-657dd2d6bdd0.png',omakase:U+'1307ddd53-12b1-4eaa-84e6-6fbca190de9a.png',wagyu:U+'199d8be7a-8c01-4812-a2bc-ae596e60b410.png',champ:U+'16504bbb2-7dc1-4b0e-8467-241abfa851a8.png',club:U+'1255f20c5-661f-43c6-970d-1120ceb4bb93.png',treat:U+'1f2a0391e-a86d-4cde-b6de-e6289d69fcd8.png',yaris:U+'1c4b32b7d-428a-49fe-bac5-17af4be543b4.png',supra:U+'161c0afaa-79aa-4f30-a33d-b2a493e42bf0.png',cclass:U+'1fc1b593d-27a4-4d8e-9f61-f452b1f07b22.png',sclass:U+'132bf2b75-330b-4c13-9b18-46a43621d195.png',bmw3:U+'1e3409c3f-d226-4163-9f6b-ba57c4473f17.png',x7:U+'111c630a1-8bd7-4cbd-9704-d3e17782df42.png',cayman:U+'1f91c3667-4190-4106-a810-d47e03eb8289.png',p911:U+'12491ffd9-ac5d-498d-8978-510c94a73730.png',taycan:U+'1ade47262-d71d-4fed-ba64-0d99fa7e32b8.png',panamera:U+'136a3fef4-fc71-44ef-9960-79df2444f7c3.png',roma:U+'1598efdc8-71d6-4ebe-9b06-f93c782b0581.png',urus:U+'1a603328a-e802-443c-8273-90c4cbe23d30.png',huracan:U+'137678687-535a-404f-a6d8-0ac0fe9488f5.png',chiron:U+'10987f399-9bdd-476e-a3ed-e607d300e93d.png',bolide:U+'150268297-ff9c-4add-83b9-cad3df8f0e53.png',jesko:U+'1a47bf1e5-5f14-480f-8d8b-49898743a252.png',agera:U+'169f9deee-0991-4bca-bd70-a24b039a3f5b.png',ghost:U+'1f0b648a2-6f1a-4016-b554-e7789cc5928a.png',phantom:U+'1d65ac113-e74a-40e5-b040-6b660367b46c.png',pcx:U+'19ffc02e7-19ad-4e37-884a-3f4f404963c8.png',primavera:U+'17b43772f-2edb-4bca-9daa-a6dbcddd0659.png',vespa946:U+'15e315cc1-a84c-46e3-9652-24e554062be0.png',cbr:U+'1428abc2f-945a-4d31-864e-f747cc6d71b9.png',s1000rr:U+'1392485b0-1604-401f-b8b7-8826f6bf1279.png',streetfighter:U+'159c8a55f-ff73-4ac3-82ad-1a382c4ba3d9.png',panigale:U+'1bf8f6c6b-b4fc-4e5d-8b63-f57410b41f4e.png',r18:U+'12a333132-7942-458c-9880-98d28c321506.png',fatboy:U+'1f7d20408-5b3f-4477-806f-ce1d5db86cf8.png',roadking:U+'1af1e0ae8-7a97-449b-b2e0-fff96e8d0c0e.png',bell407:U+'12918411d-c65f-4021-a6b7-1ad296b2aea3.png',h145:U+'19cd12bef-c39f-41f4-a23a-fa4ad0e461f1.png',aw139:U+'1fd1e4715-1433-4701-b05e-d4fee2eaf98f.png',h160:U+'1d1b26f2d-9131-455d-94b3-b6f6e8bd62d0.png',citation:U+'17ce22902-c880-48ec-bcf7-4ad97d6af708.png',challenger:U+'182a69bae-c047-4f18-87d4-2dac6e2917f8.png',g650:U+'1aa121259-cf67-4917-89db-b97f7c12e87f.png',bbj:U+'155604099-01aa-4796-86f9-6fcc6e41f609.png',acj:U+'101e40b51-5fa9-486c-b13c-59e02faa8efa.png',speedboat:U+'1f41efc28-83ae-41c7-9b7c-7e4458852319.png',sailboat:U+'1cbeb044f-74e6-43de-88d1-b3a9251808f3.png',catamaran:U+'18d636779-b9a0-499b-89c4-3e0d20936662.png',sportyacht:U+'1d81b82f2-2f39-4a49-822f-59fefe26ba8e.png',superyacht:U+'15b6ba784-3373-44aa-ae10-bdfb7c17d80e.png',megayacht:U+'1772f788e-20ae-4287-bcd5-8ebede191097.png',house1:U+'17233c951-3bd3-443a-b105-71915f604993.png',mansion1:U+'1d0e5f6cf-5977-40c0-8834-e1df0c85bce4.png',condo:U+'1fd30ed0f-ba91-4317-9f28-b4c0dd73bca7.png',villa:U+'1c23cff20-d739-404b-a383-02ba53910e19.png',pent:U+'155cb752d-4614-4763-a772-816d482dc894.png',hotel:U+'1a7b70291-d89c-4e32-abf8-f10e8fc5f334.png',island:U+'13f1e8f06-9e58-4e7b-a429-5b21fc3b13d7.png',flower:U+'163458bb3-9ed8-4ea4-8ee6-c43171b5c69d.png',cake:U+'163e729c7-2d64-4498-aa0c-5c8f2736a4c5.png',perfumeG:U+'101220fd2-cf91-432b-8307-e32d56130754.png',silk:U+'128d544a0-c300-405e-8ad2-347aaf3b64e3.png',watchG:U+'15b2e14e6-d298-487f-a12c-95278624fb6e.png',carG:U+'1d8348d95-b68b-42ad-aa8d-4a4694ca4bbf.png',deed:U+'124706961-6e7f-4a64-b96e-6af70fbea31f.png'};
@@ -307,7 +377,6 @@ const STAFF=[
  {id:'chef',icon:'👨‍🍳',name:'เชฟส่วนตัว "อาโป"',cost:800000,desc:'ทำอาหารให้ทันทีที่เริ่มหิว ไม่ต้องเสียเงินกินเอง'}];
 const GIFTS=[{id:'flower',icon:'💐',name:'ช่อดอกไม้',price:500,aff:5,img:P.flower},{id:'cake',icon:'🎂',name:'เค้กสตรอว์เบอร์รี',price:1500,aff:8,img:P.cake},{id:'perfumeG',icon:'🌹',name:'น้ำหอมฝรั่งเศส',price:8000,aff:15,npc:['mint','lisa'],img:P.perfumeG},{id:'silk',icon:'🧣',name:'ผ้าไหมลายทอง',price:20000,aff:18,npc:['mint','lisa'],img:P.silk},{id:'watchG',icon:'⌚',name:'นาฬิกาทอง',price:60000,aff:25,npc:['win','thana'],img:P.watchG},{id:'carG',icon:'🏎️',name:'รถสปอร์ตผูกโบ',price:4500000,aff:45,npc:['win'],img:P.carG},{id:'deed',icon:'📜',name:'โฉนดที่ดินทอง',price:25000000,aff:60,npc:['thana'],img:P.deed}];
 
-/* ================= ตลาดทุน ================= */
 const IV=rows=>rows.map(r=>({id:r[0],icon:r[1],name:r[2],start:r[3],vol:r[4],drift:r[5],risk:r[6],cat:r[7],div:r[8]||0,mcap:r[9]}));
 const TH_STOCKS=IV([['ptx','🛢️','PTX พลังไทยกรุ๊ป',38.75,.025,.0008,'กลาง','th',.004,1.1e12],['glfv','⚡','GLFV กัลฟ์วินด์ เอ็นเนอร์ยี่',67.50,.028,.0009,'กลาง','th',.005,6.2e11],['advn','📶','ADVN แอดวานซ์ดิจิทัล',375,.022,.0007,'ต่ำ','th',.03,8.4e11],['dltx','🔌','DLTX เดลต้าอีเล็คทรอนิคส์',262,.04,.0012,'สูง','th',.01,6.5e11],['scbz','🏦','SCBZ สยามพาณิชย์ธนาคาร',154,.02,.0005,'ต่ำ','th',.02,5.1e11],['kbk','💳','KBK กสิกรธนกิจ',252,.02,.0005,'ต่ำ','th',.02,3.7e11],['bbk','🏛️','BBK กรุงเทพธนาลย',195,.018,.0004,'ต่ำ','th',.015,3.2e11],['truv','📡','TRUV ทรูเน็ตเวิร์ค',13.50,.035,.0009,'สูง','th',.002,4.2e11],['ktbx','🏧','KTBX กรุงไทยพัฒน์',45.50,.02,.0005,'ต่ำ','th',.005,3.1e11],['bdm','🏥','BDM กรุงเทพเวชธานี',19.90,.022,.0007,'ต่ำ','th',.002,2.9e11]]);
 const FUNDS=IV([['sdp501','🗽','กองทุน SCD S&P501Q (หุ้นอเมริกา)',92.40,.018,.0011,'กลาง','fund',0,3e10],['kzusa','🇺🇸','กองทุน KZ-USA200',48.20,.017,.0010,'กลาง','fund',0,2.5e10],['bqgsp','🌐','กองทุน BQ Global SIP',27.80,.016,.0009,'กลาง','fund',0,2e10],['tmqes','🌱','กองทุน TMQ ESG โลกยั่งยืน',15.60,.019,.0009,'กลาง','fund',0,1.5e10],['kzgold','🪙','กองทุน KZ ทองคำโลก',78.90,.01,.0005,'ต่ำ','fund',0,1.8e10],['scdcr','₿','กองทุน SCD Crypto2000',9.40,.09,.0015,'สูงมาก','fund',0,1.2e10],['kzchg','♻️','กองทุน KZ Change โลกเปลี่ยน',21.30,.02,.0010,'กลาง','fund',0,1.4e10],['tscvi','🇹🇭','กองทุน TSC VI หุ้นไทยคุณค่า',34.60,.02,.0008,'กลาง','fund',.006,1.6e10]]);
@@ -331,7 +400,6 @@ const INV_CATS=[['all','✨ ทั้งหมด'],['game','🎮 เกม/เ�
 const FUND_IDS=FUNDS.map(f=>f.id);
 const NEWS=[{a:'stock',d:1,t:'RICH Corp ประกาศกำไรทุบสถิติ'},{a:'stock',d:-1,t:'ข่าวลือผู้บริหาร RICH เทขายหุ้น'},{a:'mint',d:1,t:'MINT Cafe กระแสไวรัล คิวยาวทุกสาขา'},{a:'emp',d:1,t:'Empire Mall ยอดทราฟฟิกทุบสถิติ'},{a:'vmot',d:-1,t:'ชิปขาดแคลน กระทบการผลิต V-Motor'},{a:'thana',d:1,t:'Thana Group ประกาศปันผลพิเศษ'},{a:'crypto',d:1,t:'วาฬกวาดซื้อ RICH-Coin ครั้งใหญ่'},{a:'crypto',d:-1,t:'แพลตฟอร์มคริปโตต่างชาติถูกแฮ็ก'},{a:'gold',d:1,t:'เศรษฐกิจผันผวน นักลงทุนหนีเข้าทองคำ'},{a:'ptx',d:1,t:'PTX กำไรธุรกิจพลังงานโตเกินคาด'},{a:'ptx',d:-1,t:'ราคาน้ำมันดิบร่วง กดดัน PTX'},{a:'scbz',d:-1,t:'กนง. คงดอกเบี้ย กดดันกลุ่มธนาคาร'},{a:'kbk',d:1,t:'KBK ปล่อยสินเชื่อโตแรง'},{a:'advn',d:1,t:'ADVN ชนะประมูลคลื่น 6G'},{a:'nvdx',d:1,t:'ชิป AI เฟื่องฟู NVDX พุ่งแรง'},{a:'aplx',d:-1,t:'ข่าวลือยอดขายสมาร์ทโฟนแผ่ว กด APLX'},{a:'tslx',d:1,t:'TSLX เปิดตัวรุ่นราคาประหยัด ยอดจองถล่ม'},{a:'koke',d:1,t:'ยอดขายน้ำดำโตเกินคาด'},{a:'frr',d:1,t:'FRR รุ่นลิมิเต็ดถูกจองหมดใน 10 นาที'},{a:'sdp501',d:1,t:'ตลาดอเมริกาทำนิวไฮ กองทุน S&P501Q บวก'}];
 
-/* ================= สินค้า ================= */
 const IT=(s,rows)=>rows.map(r=>{const o={id:r[0],scene:s,icon:r[1],name:r[2],desc:r[3],price:r[4]};if(!r[8])o.once=true;if(P[r[0]])o.img=P[r[0]];if(r[6])o.brand=r[6];if(r[7])o.boost=r[7];return o;});
 const ITEMS=[
  ...IT('home',[['coffee','☕','กาแฟดริปพรีเมียม','ปลุกพลังสายฟรีแลนซ์',30,0,0,0,1],['noodles','🍜','บะหมี่ยกแพ็ค','เสบียงคู่ห้องเล็ก ๆ',90,0,0,0,1],['tshirt','👕','เสื้อยืดคอลเลกชันใหม่','ใส่สบายแต่ดูดี',250,0,0,0,1],['headphone','🎧','หูฟังไร้สายตัดเสียง','โลกส่วนตัวของนักทำงาน',1200,0,0,0,1],['gaming','🎮','ชุดเกมมิ่งเริ่มต้น','รางวัลหลังวันทำงานหนัก',3500],['pc','💻','อัปเกรดคอมทำงาน','บูสต์: รายได้จากทำงาน x2',12000,0,0,'work2x']]),
@@ -382,21 +450,39 @@ const MISSIONS=[
 const DAILIES=[{id:'d_coffee',name:'ซื้อกาแฟ 3 แก้ว',reward:1000,max:3,prog:s=>Math.min(3,s.daily.coffee)},{id:'d_talk',name:'คุยกับ NPC ให้ครบ 4 คน',reward:2000,max:4,prog:s=>Object.keys(s.daily.talked).length},{id:'d_spend',name:'ใช้จ่าย 50,000 บาทในวันนี้',reward:10000,max:50000,prog:s=>Math.min(50000,s.daily.spentToday)}];
 
 /* ================= State ================= */
-const CASHBACK_RATE=200,CASHBACK_DELAY=1000,SAVE_KEY='richsys_v4_5',STAFF_UNLOCK=10000000,UNLIM_MONEY=9e15;
+const CASHBACK_RATE=200,CASHBACK_DELAY=1000,SAVE_KEY='richsys_v4_6',STAFF_UNLOCK=10000000,UNLIM_MONEY=9e15;
 function defaultState(){return{name:'ผู้เล่น',system:null,money:1000,spent:0,cbTotal:0,vip:false,divTotal:0,
  aff:{mint:0,lisa:0,win:0,thana:0},perks:{},staff:{secretary:false,bodyguard:false,chef:false},
  owned:{},flags:{},missions:{},talkCd:{},scene:'home',brand:'all',invCat:'all',upg:{},
  inv:Object.fromEntries(INV_ASSETS.map(a=>[a.id,{qty:0,cost:0}])),
  prices:Object.fromEntries(INV_ASSETS.map(a=>[a.id,a.start])),
- karma:0,stAct:0,hunger:0,happy:80,health:80,totalMin:480,hungerFlag:'',
+ karma:0,stAct:0,hunger:0,happy:80,health:80,totalMin:480,hungerFlag:'',cloudTs:0,
  daily:{date:'',coffee:0,talked:{},spentToday:0,claimed:{}},hist:[],spentBy:{},news:[],
- set:{sound:true,notif:true,autosave:true},lastSeen:Date.now(),started:false};}
+ set:{sound:true,notif:true,autosave:true,cloud:true},lastSeen:Date.now(),started:false};}
 let S=defaultState();
 try{const raw=localStorage.getItem(SAVE_KEY);if(raw){S=Object.assign(defaultState(),JSON.parse(raw));}}catch(e){}
 INV_ASSETS.forEach(a=>{if(!S.inv[a.id])S.inv[a.id]={qty:0,cost:0};if(!S.prices[a.id])S.prices[a.id]=a.start;});
 if(!S.invCat)S.invCat='all';
 if(S.system==='unlimited')S.money=UNLIM_MONEY;
-function save(){if(!S.set.autosave)return;S.lastSeen=Date.now();try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));}catch(e){}}
+function applyState(obj){
+ S=Object.assign(defaultState(),obj);
+ INV_ASSETS.forEach(a=>{if(!S.inv[a.id])S.inv[a.id]={qty:0,cost:0};if(!S.prices[a.id])S.prices[a.id]=a.start;});
+ if(!S.invCat)S.invCat='all';
+ if(S.system==='unlimited')S.money=UNLIM_MONEY;
+ try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));}catch(e){}
+}
+function save(){
+ if(S.set.autosave){S.lastSeen=Date.now();try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));}catch(e){}}
+ cloudPush();
+}
+function renderAll(){
+ if(!S.started||!S.system)return;
+ const sc=SCENES.find(x=>x.id===S.scene)||SCENES[0];
+ $('sceneBg').style.backgroundImage='url('+sc.img+')';
+ $('sceneName').textContent=sc.icon+' '+sc.name;$('sceneDesc').textContent=sc.desc;
+ renderSceneTabs();renderBrandTabs();renderNPCs();renderShop();renderIncome();
+ renderMissions();renderDaily();renderAssets();refreshPanels();updateHUD();updateStatus();
+}
 
 let pending=[],workReadyAt=0,eatReadyAt=0,restReadyAt=0,spinReadyAt=0,spinning=false,spinRot=0,nextNewsAt=Date.now()+40000,tickN=0;
 let lastShownP={...S.prices};
@@ -466,7 +552,6 @@ function updateStatus(){
  $('gameClock').textContent='🕐 วันที่ '+day+' • '+hh+':'+mi+' '+periodName(Math.floor(mm/60));
 }
 
-/* ================= ทีมงาน (ฉาก HQ เท่านั้น) ================= */
 function renderHQ(){
  const wrap=$('shop');wrap.innerHTML='';
  $('shopTitle').textContent='👥 ทีมงานของคุณ • สำนักงานใหญ่';
@@ -560,7 +645,6 @@ function renderShop(){const sc=SCENES.find(x=>x.id===S.scene);const disc=discoun
    '<button class="buy-btn'+(owned?' owned':'')+'" '+(owned?'disabled':'')+' onclick="buy(\''+item.id+'\')">'+(owned?'✓ ครบแล้ว':'ซื้อ')+'</button></div>';
   wrap.appendChild(card);});}
 
-/* ================= ตลาดทุน ================= */
 function renderNews(){const t=$('newsTicker');t.innerHTML=S.news.length?S.news.map(n=>'<div class="news-item">📰 '+n+'</div>').join(''):'<div class="news-item">📰 ตลาดเงียบสงบ... รอข่าวถัดไป</div>';}
 function renderInvest(){const wrap=$('shop');wrap.innerHTML='';
  $('shopTitle').textContent='ตลาดทุน • 57 หลักทรัพย์';
@@ -859,7 +943,7 @@ function drawStats(){const cm=$('chMoney');if(!cm)return;const ctx=cm.getContext
 
 function openProfile(){$('profPic').src=IMG.player;$('profName').textContent=S.name;
  const sysNames={cashback:'ระบบเงินคืน 200% (เข้าใน 1 วิ)',income:'ระบบรายได้วินาที',unlimited:'ระบบเงินไม่จำกัด ∞',gift:'ระบบเปย์คนสนิท'};
- $('profSub').textContent='ผู้ถือ '+sysNames[S.system]+' • ไม่มีเลเวล • ไม่มีการเกิดใหม่';
+ $('profSub').textContent='ผู้ถือ '+sysNames[S.system]+' • ไม่มีเลเวล • ไม่มีการเกิดใหม่ • Player ID: '+getCloudId();
  const onceTotal=ITEMS.filter(i=>i.once).length;
  const onceOwned=ITEMS.filter(i=>i.once&&(S.owned[i.id]||0)>0).length;
  const assetVal=ITEMS.filter(i=>i.once&&(S.owned[i.id]||0)>0).reduce((a,i)=>a+i.price,0);
@@ -886,15 +970,14 @@ function openProfile(){$('profPic').src=IMG.player;$('profName').textContent=S.n
 function closeProfile(){$('profileModal').classList.add('hidden');}
 
 function openSettings(){$('setSound').checked=S.set.sound;$('setNotif').checked=S.set.notif;$('setAuto').checked=S.set.autosave;
+ $('setCloud').checked=S.set.cloud!==false;
+ $('cloudIdBox').value=getCloudId();
  $('exportBox').value=btoa(unescape(encodeURIComponent(JSON.stringify(S))));$('importBox').value='';
  $('settingsModal').classList.remove('hidden');}
 function closeSettings(){$('settingsModal').classList.add('hidden');}
 function setOpt(k,v){S.set[k]=v;if(k==='sound')$('muteBtn').textContent=S.set.sound?'🔊':'🔇';save();}
 function importSave(){try{const obj=JSON.parse(decodeURIComponent(escape(atob($('importBox').value.trim()))));
- S=Object.assign(defaultState(),obj);
- INV_ASSETS.forEach(a=>{if(!S.inv[a.id])S.inv[a.id]={qty:0,cost:0};if(!S.prices[a.id])S.prices[a.id]=a.start;});
- if(S.system==='unlimited')S.money=UNLIM_MONEY;
- localStorage.setItem(SAVE_KEY,JSON.stringify(S));location.reload();}catch(e){alert('โค้ด save ไม่ถูกต้อง');}}
+ applyState(obj);if(S.started&&S.system)renderAll();cloudPush();toast('ev','📥 นำเข้า save สำเร็จ');}catch(e){alert('โค้ด save ไม่ถูกต้อง');}}
 
 function switchTab(t){['sys','sms','event','mission','daily','stats','asset'].forEach(x=>{$('tab-'+x).classList.toggle('hidden',x!==t);});
  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
@@ -927,14 +1010,13 @@ function enterGame(fresh){
  $('sceneBg').style.backgroundImage='url('+sc.img+')';
  $('sceneName').textContent=sc.icon+' '+sc.name;$('sceneDesc').textContent=sc.desc;
  ensureDaily();
- renderSceneTabs();renderBrandTabs();renderNPCs();renderShop();renderIncome();
- renderMissions();renderDaily();renderAssets();refreshPanels();updateHUD();updateStatus();
+ renderAll();
  if(fresh&&S.system==='income')popup({title:'⏱ ระบบรายได้วินาที',text:'ซื้อธุรกิจเพื่อรับเงินทุกวินาที\nแม้ปิดเกมก็ยังสะสมได้ (สูงสุด 8 ชม.)\nเริ่มจากฟรีแลนซ์ออนไลน์ 500 บาทเลย!'});
  if(fresh&&S.system==='unlimited')popup({title:'✨ ระบบเงินไม่จำกัด ∞',text:'คุณมีเงินไม่จำกัดตั้งแต่ตอนนี้ — ไม่ต้องกดเบิกอีกต่อไป\n\nที่ตลาดทุนมีปุ่ม "💥 ซื้อหุ้นทั้งหมด"\nกวาดซื้อทุกหลักทรัพย์ได้ในคลิกเดียว\n\nแต่จงระวัง... ทุกการเลือกของคุณจะถูกชั่งด้วย "กรรม"\nมีเรื่องราวรอคุณถึง 11 เหตุการณ์\nและกรรมจะกำหนดบทสรุปของคุณ'});
  if(fresh&&S.system==='gift')popup({title:'🎁 ระบบเปย์คนสนิท',text:'มอบของขวัญให้ NPC เพื่อสร้างความสัมพันธ์\nพวกเขาจะตอบแทนน้ำใจคุณพร้อมผลตอบแทน\nสนิทถึง "คนพิเศษ" รับ Perk ถาวร!'});
  if(fresh&&S.system==='cashback'){addSys('[ระบบ] คุณเลือก ระบบเงินคืน');
   sms('Rich System: เปิดใช้งานระบบเงินคืนแล้ว');
-  popup({title:'[ระบบ] เปิดใช้งานระบบเงินคืน',text:'เงินออกจากบัญชีเมื่อไหร่ คืน 2 เท่า (200%)\nเข้าใน 1 วินาที ⚡ • ไม่มีเลเวล\n\nใช้ได้กับทุกอย่าง: ของซื้อ • หุ้น • กองทุน\nธุรกิจ • ของขวัญ • ค่าสปิน • ค่าจ้างทีมงาน\n\nทีมงาน (เลขา/บอดี้การ์ด/เชฟ) อยู่ที่ฉาก 🏢 สำนักงานใหญ่ (HQ)\nปลดล็อกเมื่อมีเงินสดครบ 10 ล้านบาท'});}
+  popup({title:'[ระบบ] เปิดใช้งานระบบเงินคืน',text:'เงินออกจากบัญชีเมื่อไหร่ คืน 2 เท่า (200%)\nเข้าใน 1 วินาที ⚡ • ไม่มีเลเวล\n\nใช้ได้กับทุกอย่าง: ของซื้อ • หุ้น • กองทุน\nธุรกิจ • ของขวัญ • ค่าสปิน • ค่าจ้างทีมงาน\n\nทีมงาน (เลขา/บอดี้การ์ด/เชฟ) อยู่ที่ฉาก 🏢 สำนักงานใหญ่ (HQ)\nปลดล็อกเมื่อมีเงินสดครบ 10 ล้านบาท\n\n☁️ เกมซิงก์ขึ้นคลาวด์แบบเรียลไทม์แล้ว\nคัดลอก Player ID ในตั้งค่า เพื่อเล่นต่อบนเครื่องอื่นได้'});}
  if(!fresh){addSys('[ระบบ] ยินดีต้อนรับกลับ '+S.name);
   if(S.system==='income'){const elapsed=(Date.now()-(S.lastSeen||Date.now()))/1000;
    if(elapsed>60){const gain=Math.round(computeIPS()*Math.min(elapsed,28800));
@@ -942,11 +1024,15 @@ function enterGame(fresh){
      popup({title:'😴 รายได้ระหว่างออฟไลน์',text:'ธุรกิจของคุณทำงานต่อแม้คุณไม่อยู่\n('+(elapsed/60).toFixed(0)+' นาที)\nได้รับ +'+fmt(gain)+' บาท'});
      updateHUD();}}}}
  save();}
-function resetGame(){if(!confirm('เริ่มเกมใหม่ทั้งหมด? ความคืบหน้าจะถูกลบ'))return;
- try{localStorage.removeItem(SAVE_KEY);}catch(e){}location.reload();}
+function resetGame(){if(!confirm('เริ่มเกมใหม่ทั้งหมด? ความคืบหน้าจะถูกลบ (ทั้งเครื่องนี้และคลาวด์)'))return;
+ try{localStorage.removeItem(SAVE_KEY);}catch(e){}
+ S=defaultState();
+ if(CLOUD.ref){try{CLOUD.ref.delete();}catch(e){}}
+ location.reload();}
 
 /* ================= Tick หลัก ================= */
 setInterval(()=>{
+ if(!S.started||!S.system)return;
  tickN++;
  S.totalMin++;
  const h=S.totalMin%1440;
@@ -992,6 +1078,7 @@ banner.addEventListener('touchend',e=>{if(tX==null)return;
  tX=null;},{passive:true});
 
 if(S.started&&S.system){enterGame(false);}
+initCloud();
 </script>
 </body>
 </html>
